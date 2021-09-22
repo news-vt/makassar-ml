@@ -8,6 +8,7 @@ numpy = "*"
 matplotlib = "*"
 pandas = "*"
 ipykernel = "*"
+seaborn = "*"
 
 [dev-packages]
 
