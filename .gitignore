@@ -1,3 +1,7 @@
+# Datasets.
+**/dataset/
+**/datasets/
+
 # macOS files.
 .DS_Store
 Icon?
