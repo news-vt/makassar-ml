@@ -1,3 +1,8 @@
+# macOS files.
+.DS_Store
+Icon?
+![iI]con[_a-zA-Z0-9]
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
