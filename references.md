@@ -12,3 +12,6 @@
     - humidity deficit (g/kg)
     - relative humidity (percentage)
     - radiation (W/m2)
+- Time2Vec: Learning a Vector Representation of Time
+  - <https://arxiv.org/abs/1907.05321>
+  - Proposes an learned embedding representation for time-series data.
