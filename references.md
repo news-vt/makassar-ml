@@ -15,3 +15,6 @@
 - Time2Vec: Learning a Vector Representation of Time
   - <https://arxiv.org/abs/1907.05321>
   - Proposes an learned embedding representation for time-series data.
+- What is a Transformer?
+  - <https://medium.com/inside-machine-learning/what-is-a-transformer-d07dd1fbec04>
+  - Example of how to do simple time-series forecasting using the Transformer architecture.
