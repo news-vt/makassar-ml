@@ -21,3 +21,7 @@
 5. The Annotated Transformer
     - <https://nlp.seas.harvard.edu/2018/04/03/attention.html>
     - A really good in-depth guide on how each part of a Transformer works under the hood. It builds each element step-by-step and discusses how it works.
+6. How to use Transformer Networks to build a Forecasting model
+    - Article: <https://towardsdatascience.com/how-to-use-transformer-networks-to-build-a-forecasting-model-297f9270e630>
+    - GitHub: <https://github.com/CVxTz/time_series_forecasting/blob/main/time_series_forecasting/model.py>
+    - Example of time-series forecasting using Transformer.
