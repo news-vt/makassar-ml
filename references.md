@@ -25,3 +25,6 @@
     - Article: <https://towardsdatascience.com/how-to-use-transformer-networks-to-build-a-forecasting-model-297f9270e630>
     - GitHub: <https://github.com/CVxTz/time_series_forecasting/blob/main/time_series_forecasting/model.py>
     - Example of time-series forecasting using Transformer.
+7. Deep Transformer Models for Time Series Forecasting: The Influenza Prevalence Case
+    - <https://arxiv.org/pdf/2001.08317.pdf>
+    - Develops a Transformer-based model for time-series forecasting.
