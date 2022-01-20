@@ -31,3 +31,7 @@
 8. Time Series Prediction using LSTM with PyTorch in Python
     - <https://stackabuse.com/time-series-prediction-using-lstm-with-pytorch-in-python/>
     - Good simple example of LSTM for time-series prediction.
+9. Long-Range Transformers for Dynamic Spatiotemporal Forecasting
+    - <https://arxiv.org/abs/2109.12218>
+    - Transformer architecture that treats each variable as a separate token, rather than a vector of tokens. This allows learning of cross-variable relationships.
+    - This may be useful for using multiple weather variables as inputs for prediction.
