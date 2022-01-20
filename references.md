@@ -28,3 +28,6 @@
 7. Deep Transformer Models for Time Series Forecasting: The Influenza Prevalence Case
     - <https://arxiv.org/pdf/2001.08317.pdf>
     - Develops a Transformer-based model for time-series forecasting.
+8. Time Series Prediction using LSTM with PyTorch in Python
+    - <https://stackabuse.com/time-series-prediction-using-lstm-with-pytorch-in-python/>
+    - Good simple example of LSTM for time-series prediction.

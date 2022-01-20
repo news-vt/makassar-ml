@@ -8,8 +8,10 @@ numpy = "*"
 matplotlib = "*"
 pandas = "*"
 ipykernel = "*"
+jupyterthemes = "*"
 
 [dev-packages]
+ipykernel = "*"
 
 [requires]
 python_version = "3.9"
