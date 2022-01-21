@@ -25,6 +25,7 @@ homepage = ""
 dev = [
     "ipykernel>=6.7.0",
     "jupyterthemes>=0.20.0",
+    "pytest>=6.2.5",
 ]
 
 [build-system]
