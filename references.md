@@ -35,3 +35,6 @@
     - <https://arxiv.org/abs/2109.12218>
     - Transformer architecture that treats each variable as a separate token, rather than a vector of tokens. This allows learning of cross-variable relationships.
     - This may be useful for using multiple weather variables as inputs for prediction.
+10. Temporal Pattern Attention for Multivariate Time Series Forecasting
+    - <https://arxiv.org/abs/1809.04206>
+    - Page 9 contains function for creating example toy datasets.
