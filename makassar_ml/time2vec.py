@@ -1,6 +1,10 @@
 import torch
 import torch.nn
-from typing import Callable
+from typing import Callable, TypeVar
+
+# Type definition for activation function.
+T = TypeVar('T')
+ActivationFunction = Callable[[T], T]
 
 class Time2Vec(torch.nn.Module):
     """Implementation of the Time2Vec embedding technique as proposed by Kazemi et al. 2019.
@@ -9,7 +13,7 @@ class Time2Vec(torch.nn.Module):
     def __init__(self, 
         input_dim: int = 6,
         embed_dim: int = 512,
-        act_func: Callable[[torch.Tensor], torch.Tensor] = torch.sin,
+        act_func: ActivationFunction[torch.Tensor] = torch.sin,
         ) -> None:
         super().__init__()
 
