@@ -32,3 +32,33 @@ class Time2Vec(torch.nn.Module):
 
         # The periodic activation function.
         self.act_func = act_func
+
+    def forward(self, x):
+
+        # Perform affine transformation (y = xw + b) on the input w.r.t. using the module weight and bias.
+        affine = torch.matmul(x, self.weight) + self.bias
+
+        # Pass the 1<=i<=k parts of the affine transformation through the activation function.
+        # Note that the i=0 index is unchanged.
+        affine[...,1:] = self.act_func(affine[...,1:])
+
+        # Ensure that the output is 3-dimensional.
+        out = affine.view(affine.size(0), affine.size(1), -1)
+        return out
+
+
+
+
+        # # Separate the first element from the affine transformation.
+        # # From the paper, these are indexes i=0 and 1<=i<=k.
+        # affine_0, affine_k = torch.split(
+        #     affine,
+        #     [1, self.embed_dim-1],
+        #     dim=-1,
+        # )
+
+        # # Pass the 1<=i<=k parts of the affine transformation through the activation function.
+        # affine_k = self.act_func(affine_k)
+
+        # # Rebuild the tensor with both i=0 and 1<=i<=k components.
+        # y = torch.cat((affine_0, affine_k), dim=-1)
