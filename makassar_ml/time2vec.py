@@ -11,7 +11,7 @@ class Time2Vec(torch.nn.Module):
     https://arxiv.org/abs/1907.05321
     """
     def __init__(self, 
-        input_dim: int = 6,
+        input_dim: int,
         embed_dim: int = 512,
         act_func: ActivationFunction[torch.Tensor] = torch.sin,
         ) -> None:
