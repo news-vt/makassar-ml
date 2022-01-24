@@ -1,6 +1,6 @@
-# Datasets.
-**/dataset/
-**/datasets/
+# Datasets at root directory.
+/dataset/
+/datasets/
 
 # macOS files.
 .DS_Store
