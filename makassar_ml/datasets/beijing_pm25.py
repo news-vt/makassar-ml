@@ -9,7 +9,7 @@ from tqdm.auto import tqdm
 class BeijingPM25Dataset(torch.utils.data.Dataset):
     """Wrapper for Beijing PM2.5 dataset.
 
-    https://archive.ics.uci.edu/ml/datasets/Beijing+PM2.5+Data/
+    https://archive-beta.ics.uci.edu/ml/datasets/beijing+pm2+5+data
 
     Dataset features:
         - `No`: (NOT USED) row number
