@@ -33,6 +33,7 @@
     - Good simple example of LSTM for time-series prediction.
 9. Long-Range Transformers for Dynamic Spatiotemporal Forecasting
     - <https://arxiv.org/abs/2109.12218>
+    - <https://github.com/qdata/spacetimeformer>
     - Transformer architecture that treats each variable as a separate token, rather than a vector of tokens. This allows learning of cross-variable relationships.
     - This may be useful for using multiple weather variables as inputs for prediction.
 10. Temporal Pattern Attention for Multivariate Time Series Forecasting
