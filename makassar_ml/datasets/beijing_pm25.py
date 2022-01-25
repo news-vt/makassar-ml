@@ -1,6 +1,4 @@
 import functools
-from logging.config import RESET_ERROR
-import os
 import pandas as pd
 import pathlib
 import requests
