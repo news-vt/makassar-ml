@@ -13,6 +13,7 @@ dependencies = [
     "torchvision>=0.11.2",
     "tqdm>=4.62.3",
     "requests>=2.27.1",
+    "pytorch-lightning>=1.5.9",
 ]
 requires-python = ">=3.9"
 license = {text = "MIT"}
