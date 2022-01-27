@@ -50,22 +50,23 @@ class BeijingPM25Dataset(torch.utils.data.Dataset):
         # Join path elements.
         self.dataset_root = root / self.dataset_root
 
+        # Downlaod if necessary.
         if download:
-            self._download(self.dataset_root)
+            self._download()
 
         # Load dataset contents.
-        self._load(self.dataset_root)
+        self._load()
 
-    def _get_filepath(self, root: str) -> pathlib.Path:
+    def _get_filepath(self) -> pathlib.Path:
         # Glean name of file from URL and build path.
         filename = pathlib.Path(self.dataset_url.rsplit('/', 1)[1])
-        filepath = (root / filename).expanduser().resolve()
+        filepath = (self.dataset_root / filename).expanduser().resolve()
         return filepath
 
-    def _download(self, root: str):
+    def _download(self):
 
         # Glean name of file from URL and build path.
-        filepath = self._get_filepath(root)
+        filepath = self._get_filepath()
 
         # If file already exists, then do not download.
         if filepath.exists():
@@ -83,13 +84,16 @@ class BeijingPM25Dataset(torch.utils.data.Dataset):
             with filepath.open('wb') as f:
                 shutil.copyfileobj(res_raw, f)
 
-    def _load(self, root: str):
+    def _load(self):
 
         # Glean name of file from URL and build path.
-        filepath = self._get_filepath(root)
+        filepath = self._get_filepath()
 
         # Read the input file.
         self.df = pd.read_csv(filepath, usecols=self.features)
+
+        # Create single date column from independent year/month/day columns.
+        self.df = self.df.assign(date=pd.to_datetime(self.df[['year','month','day','hour']]))
 
     def __len__(self):
         return self.df.shape[0]
