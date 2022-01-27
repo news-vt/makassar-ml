@@ -31,7 +31,7 @@ class BeijingPM25Dataset(torch.utils.data.Dataset):
 
     # Dataset columnds.
     features = [
-        # 'No',
+        'No',
         'year',
         'month',
         'day',
@@ -40,7 +40,7 @@ class BeijingPM25Dataset(torch.utils.data.Dataset):
         'DEWP',
         'TEMP',
         'PRES',
-        # 'cbwd',
+        'cbwd',
         'Iws',
         'Is',
         'Ir',
@@ -93,7 +93,7 @@ class BeijingPM25Dataset(torch.utils.data.Dataset):
         self.df = pd.read_csv(filepath, usecols=self.features)
 
         # Create single date column from independent year/month/day columns.
-        self.df = self.df.assign(date=pd.to_datetime(self.df[['year','month','day','hour']]))
+        self.df['datetime'] = pd.to_datetime(self.df[['year','month','day','hour']])
 
     def __len__(self):
         return self.df.shape[0]
@@ -103,6 +103,8 @@ class BeijingPM25Dataset(torch.utils.data.Dataset):
         return dict(zip(
             self.features,
             torch.from_numpy(
-                self.df.iloc[index].to_numpy()
+                self.df.iloc[index].drop(
+                    columns=['No','cbwd','datetime']
+                    ).to_numpy()
                 ).T,
             ))
