@@ -51,16 +51,21 @@ class BeijingPM25Dataset(torch.utils.data.Dataset):
         self.dataset_root = root / self.dataset_root
 
         if download:
-            self.download(self.dataset_root)
+            self._download(self.dataset_root)
 
         # Load dataset contents.
-        self.load(self.dataset_root)
+        self._load(self.dataset_root)
 
-    def download(self, root: str):
-
+    def _get_filepath(self, root: str) -> pathlib.Path:
         # Glean name of file from URL and build path.
         filename = pathlib.Path(self.dataset_url.rsplit('/', 1)[1])
         filepath = (root / filename).expanduser().resolve()
+        return filepath
+
+    def _download(self, root: str):
+
+        # Glean name of file from URL and build path.
+        filepath = self._get_filepath(root)
 
         # If file already exists, then do not download.
         if filepath.exists():
@@ -78,11 +83,10 @@ class BeijingPM25Dataset(torch.utils.data.Dataset):
             with filepath.open('wb') as f:
                 shutil.copyfileobj(res_raw, f)
 
-    def load(self, root: str):
+    def _load(self, root: str):
 
         # Glean name of file from URL and build path.
-        filename = pathlib.Path(self.dataset_url.rsplit('/', 1)[1])
-        filepath = (root / filename).expanduser().resolve()
+        filepath = self._get_filepath(root)
 
         # Read the input file.
         self.df = pd.read_csv(filepath, usecols=self.features)
