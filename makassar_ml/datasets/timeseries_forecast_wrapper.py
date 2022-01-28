@@ -5,6 +5,21 @@ import numpy as np
 
 
 class TimeseriesForecastDatasetWrapper(torch.utils.data.Dataset):
+    """PyTorch Dataset wrapper for Timeseries Forecasting.
+
+    Splits a CSV timeseries dataset into windows for
+    forecasting tasks.
+
+    The `history` is the number of points to consider as
+    context for forecasting. The `horizon` is the number
+    of points to predict in the future.
+
+    Calls to `__getitem__` return a `tuple` of the form:
+        - `history_x`: History feature values.
+        - `history_y`: History target values.
+        - `horizon_x`: Horizon feature values.
+        - `horizon_y`: Horizon target values.
+    """
 
     def __init__(self,
         dataset: CsvTimeseriesDataset,
@@ -31,14 +46,18 @@ class TimeseriesForecastDatasetWrapper(torch.utils.data.Dataset):
         """Convert window index to raw dataset index."""
         return self.window_indexes[index]
 
-    def __getitem__(self, index: int) -> tuple[torch.Tensor, torch.Tensor]:
+    def __getitem__(self, index: int) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
 
         # Retrieve start index for window.
         start_idx = self.window_indexes[index]
 
-        # Collect history and horizon values for the feature and target columns.
-        history_vals = self.dataset[start_idx:start_idx+self.history][:,self.feature_cols]
-        horizon_vals = self.dataset[start_idx+self.history:start_idx+self.history+self.horizon][:,self.target_cols]
+        # History source and target values.
+        history_x = self.dataset[start_idx:start_idx+self.history][:,self.feature_cols]
+        history_y = self.dataset[start_idx:start_idx+self.history][:,self.target_cols]
+
+        # Horizon source and target values.
+        horizon_x = self.dataset[start_idx+self.history:start_idx+self.history+self.horizon][:,self.feature_cols]
+        horizon_y = self.dataset[start_idx+self.history:start_idx+self.history+self.horizon][:,self.target_cols]
 
         # Return tuple of history and horizon values.
-        return (history_vals, horizon_vals)
+        return (history_x, history_y, horizon_x, horizon_y)

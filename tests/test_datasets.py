@@ -29,9 +29,11 @@ def test_timeseries_forecast_wrapper(dataset_root):
 
     def verify(window_idx: int):
         raw_idx = wrap.window2index(window_idx)
-        ctx, tgt = wrap[window_idx]
-        assert torch.equal(ctx, dset[raw_idx:raw_idx+history][:,feature_cols])
-        assert torch.equal(tgt, dset[raw_idx+history:raw_idx+history+horizon][:,target_cols])
+        ctx_x, ctx_y, tgt_x, tgt_y = wrap[window_idx]
+        assert torch.equal(ctx_x, dset[raw_idx:raw_idx+history][:,feature_cols])
+        assert torch.equal(ctx_y, dset[raw_idx:raw_idx+history][:,target_cols])
+        assert torch.equal(tgt_x, dset[raw_idx+history:raw_idx+history+horizon][:,feature_cols])
+        assert torch.equal(tgt_y, dset[raw_idx+history:raw_idx+history+horizon][:,target_cols])
 
     verify(0)
     verify(-1)
