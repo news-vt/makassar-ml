@@ -46,9 +46,18 @@ class BeijingPM25Dataset(torch.utils.data.Dataset):
         'Ir',
         ]
 
-    def __init__(self, root: str, download: bool = False):
-        # Join path elements.
-        self.dataset_root = root / self.dataset_root
+    def __init__(self, 
+        root: str,
+        train: bool,
+        split: float, # split to use for testing (i.e., split=0.15 means 85% train and 15% test).
+        download: bool = False,
+        tensor_drop_columns: list[str] = ['No','cbwd','datetime'], # columns to omit from PyTorch retrieval.
+        ):
+        self.train = train
+        self.split = split
+        self.tensor_drop_columns = tensor_drop_columns
+        self.dataset_root = root / self.dataset_root # Join path elements.
+        self.features_tensor = [f for f in self.features if f not in set(tensor_drop_columns)] # Feature list for use with PyTorch tensors.
 
         # Downlaod if necessary.
         if download:
@@ -92,6 +101,16 @@ class BeijingPM25Dataset(torch.utils.data.Dataset):
         # Read the input file.
         self.df = pd.read_csv(filepath, usecols=self.features)
 
+        # Compute cutoff index for train/test split.
+        n = self.df.shape[0] # Number of data records.
+        cutoff = n - round(self.split * n) # Index where test set starts.
+
+        # Remove rows from dataframe that are not needed for the current split.
+        if self.train:
+            self.df = self.df[:cutoff]
+        else:
+            self.df = self.df[cutoff:]
+
         # Create single date column from independent year/month/day columns.
         self.df['datetime'] = pd.to_datetime(self.df[['year','month','day','hour']])
 
@@ -101,10 +120,10 @@ class BeijingPM25Dataset(torch.utils.data.Dataset):
     def __getitem__(self, index):
         # Collect dataset as dictionary of PyTorch tensors.
         return dict(zip(
-            self.features,
+            self.features_tensor,
             torch.from_numpy(
                 self.df.iloc[index].drop(
-                    columns=['No','cbwd','datetime']
+                    columns=self.tensor_drop_columns,
                     ).to_numpy()
                 ).T,
             ))
