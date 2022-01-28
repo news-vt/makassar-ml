@@ -7,6 +7,31 @@ import shutil
 import torch
 from tqdm.auto import tqdm
 
+def download_file(url: str, dst: pathlib.Path):
+    """Download a file from a URL.
+
+    Args:
+        url (str): URL string.
+        dst (pathlib.Path): Destination path.
+    """
+
+    # If file already exists, then do not download.
+    if dst.exists():
+        return
+
+    # Create root path tree.
+    dst.parent.mkdir(parents=True, exist_ok=True)
+
+    # Get file from URL and save to disk with progress bar.
+    res = requests.get(url, stream=True, allow_redirects=True)
+    file_size = int(res.headers.get('Content-Length', 0))
+    desc = "(Unknown total file size)" if file_size == 0 else ""
+    res.raw.read = functools.partial(res.raw.read, decode_content=True) # Decompress if necessary.
+    with tqdm.wrapattr(res.raw, 'read', total=file_size, desc=desc) as res_raw:
+        with dst.open('wb') as f:
+            shutil.copyfileobj(res_raw, f)
+
+
 class BeijingPM25Dataset(CsvTimeseriesDataset):
     """Wrapper for Beijing PM2.5 dataset.
 
@@ -44,7 +69,7 @@ class BeijingPM25Dataset(CsvTimeseriesDataset):
         filename = pathlib.Path(self.dataset_url.rsplit('/', 1)[1])
         filepath = (self.dataset_root / filename).expanduser().resolve()
         if download:
-            self.download(url=self.dataset_url, dst=filepath)
+            download_file(url=self.dataset_url, dst=filepath)
 
         # Initialize parent class to load dataset from disk.
         super().__init__(
@@ -66,28 +91,3 @@ class BeijingPM25Dataset(CsvTimeseriesDataset):
 
         # Create single date column from independent year/month/day columns.
         self.df['datetime'] = pd.to_datetime(self.df[['year','month','day','hour']])
-
-    @staticmethod
-    def download(url: str, dst: pathlib.Path):
-        """Download a file from a URL.
-
-        Args:
-            url (str): URL string.
-            dst (pathlib.Path): Destination path.
-        """
-
-        # If file already exists, then do not download.
-        if dst.exists():
-            return
-
-        # Create root path tree.
-        dst.parent.mkdir(parents=True, exist_ok=True)
-
-        # Get file from URL and save to disk with progress bar.
-        res = requests.get(url, stream=True, allow_redirects=True)
-        file_size = int(res.headers.get('Content-Length', 0))
-        desc = "(Unknown total file size)" if file_size == 0 else ""
-        res.raw.read = functools.partial(res.raw.read, decode_content=True) # Decompress if necessary.
-        with tqdm.wrapattr(res.raw, 'read', total=file_size, desc=desc) as res_raw:
-            with dst.open('wb') as f:
-                shutil.copyfileobj(res_raw, f)
