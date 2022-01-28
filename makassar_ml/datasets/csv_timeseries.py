@@ -47,14 +47,10 @@ class CsvTimeseriesDataset(torch.utils.data.Dataset):
         assert self.df is not None
         return self.df.shape[0]
 
-    def __getitem__(self, index) -> dict[str, torch.Tensor]:
+    def __getitem__(self, index) -> torch.Tensor:
         assert self.df is not None
-        # Collect dataset as dictionary of PyTorch tensors.
-        return dict(zip(
-            self.features,
-            torch.from_numpy(
-                self.df.iloc[index].drop(
-                    columns=self.drop_features,
-                    ).to_numpy()
-                ).T,
-            ))
+        return torch.from_numpy(
+            self.df.iloc[index].drop(
+                columns=self.drop_features,
+                ).to_numpy()
+            )
