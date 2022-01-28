@@ -11,9 +11,8 @@ def dataset_root():
 
 
 def test_beijing_pm25(dataset_root):
-    dataset = ml.datasets.beijing_pm25.BeijingPM25Dataset(root=dataset_root)
-    assert os.path.exists(dataset.dataset_root)
-    assert dataset.df is not None
-    x = dataset[[3,4,5]]
-    assert isinstance(x, dict)
-    assert set(x.keys()) == set(dataset.features)
+    all = ml.datasets.beijing_pm25.BeijingPM25Dataset(root=dataset_root)
+    train = ml.datasets.beijing_pm25.BeijingPM25Dataset(root=dataset_root, train=True, split=0.2)
+    test = ml.datasets.beijing_pm25.BeijingPM25Dataset(root=dataset_root, train=False, split=0.2)
+    assert os.path.exists(all.dataset_root)
+    assert (len(train) + len(test)) == len(all)
