@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import pathlib
 import torch
@@ -20,8 +21,8 @@ class CsvTimeseriesDataset(torch.utils.data.Dataset):
         self.load(filepath)
 
     @property
-    def features(self):
-        return [f for f in self.df.columns.values.tolist() if f not in set(self.drop_features)]
+    def features(self) -> np.ndarray:
+        return np.array([f for f in self.df.columns.values.tolist() if f not in set(self.drop_features)])
 
     def load(self, filepath: pathlib.Path):
         """Load CSV contents from file.
