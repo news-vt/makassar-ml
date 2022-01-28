@@ -26,88 +26,68 @@ class BeijingPM25Dataset(CsvTimeseriesDataset):
         - `Iws`: Cumulated wind speed (m/s)
         - `Is`: Cumulated hours of snow
         - `Ir`: Cumulated hours of rain
+        - `datetime`: (NOT USED) dynamically generated datetime string
     """
     dataset_root = pathlib.Path('beijing_pm2.5')
     dataset_url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/00381/PRSA_data_2010.1.1-2014.12.31.csv'
-
-    # Dataset columns.
-    features = [
-        'No',
-        'year',
-        'month',
-        'day',
-        'hour',
-        'pm2.5',
-        'DEWP',
-        'TEMP',
-        'PRES',
-        'cbwd',
-        'Iws',
-        'Is',
-        'Ir',
-        ]
 
     def __init__(self, 
         root: str,
         download: bool = False,
         train: bool = False,
         split: float = 1., # split to use for testing (i.e., split=0.15 means 85% train and 15% test).
-        tensor_drop_columns: list[str] = ['No','cbwd','datetime'], # columns to omit from PyTorch retrieval.
+        drop_features: list[str] = ['No','cbwd','datetime'], # columns to omit from PyTorch retrieval.
         ):
-        super().__init__(train, split, tensor_drop_columns)
         self.dataset_root = root / self.dataset_root # Join path elements.
 
         # Downlaod if necessary.
-        if download:
-            self._download()
-
-        # Load dataset contents.
-        self._load()
-
-    def _get_filepath(self) -> pathlib.Path:
-        # Glean name of file from URL and build path.
         filename = pathlib.Path(self.dataset_url.rsplit('/', 1)[1])
         filepath = (self.dataset_root / filename).expanduser().resolve()
-        return filepath
+        if download:
+            self.download(url=self.dataset_url, dst=filepath)
 
-    def _download(self):
+        # Initialize parent class to load dataset from disk.
+        super().__init__(
+            filepath=filepath,
+            train=train,
+            split=split,
+            drop_features=drop_features,
+            )
 
-        # Glean name of file from URL and build path.
-        filepath = self._get_filepath()
+    def load(self, filepath: pathlib.Path):
+        """Load CSV from file.
+
+        This override function dynamically adds a `datetime` column.
+
+        Args:
+            filepath (pathlib.Path): Path to CSV file.
+        """
+        super().load(filepath)
+
+        # Create single date column from independent year/month/day columns.
+        self.df['datetime'] = pd.to_datetime(self.df[['year','month','day','hour']])
+
+    @staticmethod
+    def download(url: str, dst: pathlib.Path):
+        """Download a file from a URL.
+
+        Args:
+            url (str): URL string.
+            dst (pathlib.Path): Destination path.
+        """
 
         # If file already exists, then do not download.
-        if filepath.exists():
+        if dst.exists():
             return
 
         # Create root path tree.
-        filepath.parent.mkdir(parents=True, exist_ok=True)
+        dst.parent.mkdir(parents=True, exist_ok=True)
 
         # Get file from URL and save to disk with progress bar.
-        res = requests.get(self.dataset_url, stream=True, allow_redirects=True)
+        res = requests.get(url, stream=True, allow_redirects=True)
         file_size = int(res.headers.get('Content-Length', 0))
         desc = "(Unknown total file size)" if file_size == 0 else ""
         res.raw.read = functools.partial(res.raw.read, decode_content=True) # Decompress if necessary.
         with tqdm.wrapattr(res.raw, 'read', total=file_size, desc=desc) as res_raw:
-            with filepath.open('wb') as f:
+            with dst.open('wb') as f:
                 shutil.copyfileobj(res_raw, f)
-
-    def _load(self):
-
-        # Glean name of file from URL and build path.
-        filepath = self._get_filepath()
-
-        # Read the input file.
-        self.df = pd.read_csv(filepath, usecols=self.features)
-
-        # Compute cutoff index for train/test split.
-        n = self.df.shape[0] # Number of data records.
-        cutoff = n - round(self.split * n) # Index where test set starts.
-
-        # Remove rows from dataframe that are not needed for the current split.
-        if self.train:
-            self.df = self.df[:cutoff]
-        else:
-            self.df = self.df[cutoff:]
-
-        # Create single date column from independent year/month/day columns.
-        self.df['datetime'] = pd.to_datetime(self.df[['year','month','day','hour']])

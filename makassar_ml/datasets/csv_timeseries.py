@@ -1,23 +1,47 @@
 import pandas as pd
+import pathlib
 import torch
 
 
 class CsvTimeseriesDataset(torch.utils.data.Dataset):
-    # CSV file columns to use.
-    features = []
 
     def __init__(self,
+        filepath: pathlib.Path,
         train: bool = False,
         split: float = 1., # split to use for testing (i.e., split=0.15 means 85% train and 15% test).
-        tensor_drop_columns: list[str] = [],
+        drop_features: list[str] = [],
         ):
-        super().__init__()
-
-        self.df: pd.DataFrame = None
+        self.filepath = filepath
         self.train = train
         self.split = split
-        self.tensor_drop_columns = tensor_drop_columns
-        self.features_tensor = [f for f in self.features if f not in set(tensor_drop_columns)] # Feature list for use with PyTorch tensors.
+        self.drop_features = drop_features
+
+        # Load dataset contents.
+        self.load(filepath)
+
+    @property
+    def features(self):
+        return [f for f in self.df.columns.values.tolist() if f not in set(self.drop_features)]
+
+    def load(self, filepath: pathlib.Path):
+        """Load CSV contents from file.
+
+        Args:
+            filepath (pathlib.Path): Path to CSV file.
+        """
+
+        # Read the input file.
+        self.df = pd.read_csv(filepath)
+
+        # Compute cutoff index for train/test split.
+        n = self.df.shape[0] # Number of data records.
+        cutoff = n - round(self.split * n) # Index where test set starts.
+
+        # Remove rows from dataframe that are not needed for the current split.
+        if self.train:
+            self.df = self.df[:cutoff]
+        else:
+            self.df = self.df[cutoff:]
 
     def __len__(self):
         assert self.df is not None
@@ -27,10 +51,10 @@ class CsvTimeseriesDataset(torch.utils.data.Dataset):
         assert self.df is not None
         # Collect dataset as dictionary of PyTorch tensors.
         return dict(zip(
-            self.features_tensor,
+            self.features,
             torch.from_numpy(
                 self.df.iloc[index].drop(
-                    columns=self.tensor_drop_columns,
+                    columns=self.drop_features,
                     ).to_numpy()
                 ).T,
             ))
