@@ -48,8 +48,8 @@ class BeijingPM25Dataset(torch.utils.data.Dataset):
 
     def __init__(self, 
         root: str,
-        train: bool,
-        split: float, # split to use for testing (i.e., split=0.15 means 85% train and 15% test).
+        train: bool = False,
+        split: float = 1., # split to use for testing (i.e., split=0.15 means 85% train and 15% test).
         download: bool = False,
         tensor_drop_columns: list[str] = ['No','cbwd','datetime'], # columns to omit from PyTorch retrieval.
         ):
