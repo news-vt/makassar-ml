@@ -14,7 +14,7 @@ class CsvTimeseriesDataset(torch.utils.data.Dataset):
         self.filepath = filepath
         self.train = train
         self.split = split
-        self.drop_features = drop_features
+        self.drop_features = drop_features if drop_features else [] # Protect against passing `None`.
 
         # Load dataset contents.
         self.load(filepath)
