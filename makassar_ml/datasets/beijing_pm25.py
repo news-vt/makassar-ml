@@ -1,3 +1,4 @@
+from .csv_timeseries import CsvTimeseriesDataset
 import functools
 import pandas as pd
 import pathlib
@@ -6,7 +7,7 @@ import shutil
 import torch
 from tqdm.auto import tqdm
 
-class BeijingPM25Dataset(torch.utils.data.Dataset):
+class BeijingPM25Dataset(CsvTimeseriesDataset):
     """Wrapper for Beijing PM2.5 dataset.
 
     https://archive-beta.ics.uci.edu/ml/datasets/beijing+pm2+5+data
@@ -29,7 +30,7 @@ class BeijingPM25Dataset(torch.utils.data.Dataset):
     dataset_root = pathlib.Path('beijing_pm2.5')
     dataset_url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/00381/PRSA_data_2010.1.1-2014.12.31.csv'
 
-    # Dataset columnds.
+    # Dataset columns.
     features = [
         'No',
         'year',
@@ -48,16 +49,13 @@ class BeijingPM25Dataset(torch.utils.data.Dataset):
 
     def __init__(self, 
         root: str,
+        download: bool = False,
         train: bool = False,
         split: float = 1., # split to use for testing (i.e., split=0.15 means 85% train and 15% test).
-        download: bool = False,
         tensor_drop_columns: list[str] = ['No','cbwd','datetime'], # columns to omit from PyTorch retrieval.
         ):
-        self.train = train
-        self.split = split
-        self.tensor_drop_columns = tensor_drop_columns
+        super().__init__(train, split, tensor_drop_columns)
         self.dataset_root = root / self.dataset_root # Join path elements.
-        self.features_tensor = [f for f in self.features if f not in set(tensor_drop_columns)] # Feature list for use with PyTorch tensors.
 
         # Downlaod if necessary.
         if download:
@@ -113,17 +111,3 @@ class BeijingPM25Dataset(torch.utils.data.Dataset):
 
         # Create single date column from independent year/month/day columns.
         self.df['datetime'] = pd.to_datetime(self.df[['year','month','day','hour']])
-
-    def __len__(self):
-        return self.df.shape[0]
-
-    def __getitem__(self, index):
-        # Collect dataset as dictionary of PyTorch tensors.
-        return dict(zip(
-            self.features_tensor,
-            torch.from_numpy(
-                self.df.iloc[index].drop(
-                    columns=self.tensor_drop_columns,
-                    ).to_numpy()
-                ).T,
-            ))
