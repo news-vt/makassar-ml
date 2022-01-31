@@ -51,7 +51,7 @@ class CsvTimeseriesDataset(torch.utils.data.Dataset):
     def __getitem__(self, index) -> torch.Tensor:
         assert self.df is not None
         return torch.from_numpy(
-            self.df.iloc[index].drop(
+            self.df.drop(
                 columns=self.drop_features,
-                ).to_numpy()
+                ).iloc[index].to_numpy()
             )
