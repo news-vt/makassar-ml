@@ -91,3 +91,7 @@ class BeijingPM25Dataset(CsvTimeseriesDataset):
 
         # Create single date column from independent year/month/day columns.
         self.df['datetime'] = pd.to_datetime(self.df[['year','month','day','hour']])
+
+    def __getitem__(self, index) -> torch.Tensor:
+        # Manually convert underlying tensor to float32.
+        return super().__getitem__(index).float()
