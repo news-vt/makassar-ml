@@ -6,14 +6,14 @@ authors = [
     {name = "Alexander DeRieux", email = "alexander.derieux@gmail.com"},
 ]
 dependencies = [
-    "torch>=1.10.1",
-    "numpy>=1.22.1",
-    "pandas>=1.3.5",
-    "matplotlib>=3.5.1",
-    "torchvision>=0.11.2",
-    "tqdm>=4.62.3",
-    "requests>=2.27.1",
-    "pytorch-lightning>=1.5.9",
+    "torch",
+    "numpy",
+    "pandas",
+    "matplotlib",
+    "torchvision",
+    "tqdm",
+    "requests",
+    "pytorch-lightning",
 ]
 requires-python = ">=3.7"
 license = {text = "MIT"}
