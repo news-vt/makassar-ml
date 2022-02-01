@@ -15,7 +15,7 @@ dependencies = [
     "requests>=2.27.1",
     "pytorch-lightning>=1.5.9",
 ]
-requires-python = ">=3.9"
+requires-python = ">=3.7"
 license = {text = "MIT"}
 
 [project.urls]
