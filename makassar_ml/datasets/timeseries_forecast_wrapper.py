@@ -1,4 +1,4 @@
-
+from __future__ import annotations
 from .csv_timeseries import CsvTimeseriesDataset
 import torch
 import numpy as np

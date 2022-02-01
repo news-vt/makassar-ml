@@ -1,3 +1,4 @@
+from __future__ import annotations
 from .csv_timeseries import CsvTimeseriesDataset
 import functools
 import pandas as pd
