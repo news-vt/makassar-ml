@@ -39,3 +39,5 @@
 10. Temporal Pattern Attention for Multivariate Time Series Forecasting
     - <https://arxiv.org/abs/1809.04206>
     - Page 9 contains function for creating example toy datasets.
+11. A Transformer-based Framework for Multivariate Time Series Representation Learning
+    - <https://arxiv.org/abs/2010.02803>
