@@ -46,8 +46,9 @@ class Time2Vec(torch.nn.Module):
 
         # Pass the 1<=i<=k parts of the affine transformation through the activation function.
         # Note that the i=0 index is unchanged.
-        affine[...,1:] = self.act_func(affine[...,1:])
+        affine_remain = self.act_func(affine[...,1:])
+        out = torch.cat([affine[...,[0]], affine_remain], dim=-1)
 
         # Ensure that the output is 3-dimensional.
-        out = affine.view(affine.size(0), affine.size(1), -1)
+        out = out.view(out.size(0), out.size(1), -1)
         return out
