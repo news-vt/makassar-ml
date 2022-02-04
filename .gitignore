@@ -139,3 +139,6 @@ dmypy.json
 
 # PDM files
 .pdm.toml
+
+# PyTorch Lightning logs.
+lightning_logs/
