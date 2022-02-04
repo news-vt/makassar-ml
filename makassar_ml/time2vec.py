@@ -21,12 +21,12 @@ class Time2Vec(torch.nn.Module):
         self.embed_dim = embed_dim
 
         # The embedding weight, which is often the frequency of the period activation function.
-        self.weight = torch.nn.parameter.Parameter(
+        self.weight = torch.nn.Parameter(
             torch.randn(self.input_dim, self.embed_dim)
         )
 
         # The embedding bias term, which is often the phase offset of the period activation function.
-        self.bias = torch.nn.parameter.Parameter(
+        self.bias = torch.nn.Parameter(
             torch.randn(self.embed_dim)
         )
 
