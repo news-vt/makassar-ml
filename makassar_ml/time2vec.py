@@ -35,10 +35,9 @@ class Time2Vec(torch.nn.Module):
         # Call parameter reset.
         self.reset_parameters()
 
-    def reset_parameters(self):
+    def reset_parameters(self) -> None:
         torch.nn.init.xavier_uniform_(self.weight)
         torch.nn.init.uniform_(self.bias)
-
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
 
@@ -52,20 +51,3 @@ class Time2Vec(torch.nn.Module):
         # Ensure that the output is 3-dimensional.
         out = affine.view(affine.size(0), affine.size(1), -1)
         return out
-
-
-
-
-        # # Separate the first element from the affine transformation.
-        # # From the paper, these are indexes i=0 and 1<=i<=k.
-        # affine_0, affine_k = torch.split(
-        #     affine,
-        #     [1, self.embed_dim-1],
-        #     dim=-1,
-        # )
-
-        # # Pass the 1<=i<=k parts of the affine transformation through the activation function.
-        # affine_k = self.act_func(affine_k)
-
-        # # Rebuild the tensor with both i=0 and 1<=i<=k components.
-        # y = torch.cat((affine_0, affine_k), dim=-1)
