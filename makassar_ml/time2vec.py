@@ -1,5 +1,4 @@
 import torch
-import torch.nn
 from typing import Callable, TypeVar
 
 # Type definition for activation function.
@@ -22,18 +21,26 @@ class Time2Vec(torch.nn.Module):
 
         # The embedding weight, which is often the frequency of the period activation function.
         self.weight = torch.nn.Parameter(
-            torch.randn(self.input_dim, self.embed_dim)
+            torch.empty((self.input_dim, self.embed_dim))
         )
 
         # The embedding bias term, which is often the phase offset of the period activation function.
         self.bias = torch.nn.Parameter(
-            torch.randn(self.embed_dim)
+            torch.empty(self.embed_dim)
         )
 
         # The periodic activation function.
         self.act_func = act_func
 
-    def forward(self, x):
+        # Call parameter reset.
+        self.reset_parameters()
+
+    def reset_parameters(self):
+        torch.nn.init.xavier_uniform_(self.weight)
+        torch.nn.init.uniform_(self.bias)
+
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
 
         # Perform affine transformation (y = xw + b) on the input w.r.t. using the module weight and bias.
         affine = torch.matmul(x, self.weight) + self.bias
