@@ -1,0 +1,52 @@
+from __future__ import annotations
+import torch
+from ..time2vec import Time2Vec
+
+
+class TimeseriesTransformer(torch.nn.Module):
+
+    def __init__(self,
+        n_input_features: int,
+        n_output_features: int,
+        d_time_embed: int,
+        d_model: int = 512,
+        dropout: float = 0.1,
+        batch_first: bool = False,
+        n_encoder_layers: int = 4,
+        n_decoder_layers: int = 4,
+        n_encoder_heads: int = 8,
+        n_decoder_heads: int = 8,
+        ):
+        super().__init__()
+
+        self.batch_first = batch_first
+
+        # Time embedding.
+        self.time_projection = Time2Vec(input_dim=n_input_features, embed_dim=d_time_embed)
+
+        # Linear transformation from input-feature space into arbitrary n-dimension space.
+        # This is similar to a word embedding used in NLP tasks.
+        self.encoder_projection = torch.nn.Linear(in_features=d_time_embed, out_features=d_model)
+        self.decoder_projection = torch.nn.Linear(in_features=n_output_features, out_features=d_model)
+
+        # Transformer encoder/decoder layers.
+        encoder_layer = torch.nn.TransformerEncoderLayer(
+            d_model=d_model,
+            nhead=n_encoder_heads, # Number of multihead-attention models.
+            dropout=dropout,
+            dim_feedforward=4*d_model,
+            batch_first=batch_first,
+        )
+        decoder_layer = torch.nn.TransformerDecoderLayer(
+            d_model=d_model,
+            nhead=n_decoder_heads, # Number of multihead-attention models.
+            dropout=dropout,
+            dim_feedforward=4*d_model,
+            batch_first=batch_first,
+        )
+        self.encoder = torch.nn.TransformerEncoder(encoder_layer=encoder_layer, num_layers=n_encoder_layers)
+        self.decoder = torch.nn.TransformerDecoder(decoder_layer=decoder_layer, num_layers=n_decoder_layers)
+
+        # Linear output layer.
+        # We typically only predict a single data point at a time, so output features is typically 1.
+        self.linear = torch.nn.Linear(in_features=d_model, out_features=n_output_features)
