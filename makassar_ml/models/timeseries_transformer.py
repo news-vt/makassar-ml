@@ -64,3 +64,27 @@ class TimeseriesTransformer(torch.nn.Module):
         x = self.encoder(x)
 
         return x
+
+    def decode(self,
+        tgt: torch.Tensor,
+        memory: torch.Tensor,
+        tgt_mask: torch.Tensor = None,
+        ) -> torch.Tensor:
+        """Decode function.
+
+        Args:
+            tgt (torch.Tensor): The sequence to the decoder
+            memory (torch.Tensor): The sequence from the last layer of the encoder
+
+        Returns:
+            torch.Tensor: Decoded sequence.
+        """
+        # Transform target into arbitrary feature space.
+        x = self.decoder_projection(tgt)
+
+        # Pass the linear transformation through the decoder layers.
+        x = self.decoder(tgt=x, memory=memory, tgt_mask=tgt_mask)
+
+        # Pass the output of the decoder through the linear prediction layer.
+        x = self.linear(x)
+        return x
