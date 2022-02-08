@@ -1,3 +1,4 @@
+from .beijing_pm25 import BeijingPM25Dataset
 import pytorch_lightning as pl
 import torch
 
@@ -19,3 +20,10 @@ class BeijingPM25LightningDataModule(pl.LightningDataModule):
         self.horizon = horizon
         self.split = split
         self.batch_size = batch_size
+
+    def prepare_data(self):
+        # Download the dataset.
+        BeijingPM25Dataset(
+            root=self.root,
+            download=True,
+            )
