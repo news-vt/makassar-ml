@@ -50,3 +50,17 @@ class TimeseriesTransformer(torch.nn.Module):
         # Linear output layer.
         # We typically only predict a single data point at a time, so output features is typically 1.
         self.linear = torch.nn.Linear(in_features=d_model, out_features=n_output_features)
+
+    def encode(self, src: torch.Tensor) -> torch.Tensor:
+
+        # Embed the source into time-feature dimensions.
+        x = self.time_projection(src)
+
+        # Transform time embedding into arbitrary feature space
+        # for the attention encoder model.
+        x = self.encoder_projection(x)
+
+        # Pass the linear transformation through the encoder layers.
+        x = self.encoder(x)
+
+        return x
