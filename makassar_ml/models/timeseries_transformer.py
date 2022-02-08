@@ -88,3 +88,12 @@ class TimeseriesTransformer(torch.nn.Module):
         # Pass the output of the decoder through the linear prediction layer.
         x = self.linear(x)
         return x
+
+    def forward(self, 
+        src: torch.Tensor,
+        tgt: torch.Tensor,
+        tgt_mask: torch.Tensor = None,
+        ) -> torch.Tensor:
+        x = self.encode(src)
+        y = self.decode(tgt=tgt, memory=x, tgt_mask=tgt_mask)
+        return y
