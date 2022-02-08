@@ -142,3 +142,5 @@ dmypy.json
 
 # PyTorch Lightning logs.
 lightning_logs/
+model_checkpoints/
+checkpoints/
