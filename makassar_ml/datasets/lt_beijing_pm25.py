@@ -76,3 +76,21 @@ class BeijingPM25LightningDataModule(pl.LightningDataModule):
                 history=self.history,
                 horizon=self.horizon,
                 )
+
+    def train_dataloader(self):
+        return torch.utils.data.DataLoader(
+            dataset=self.dataset_train_wrap,
+            batch_size=self.batch_size,
+            )
+
+    def val_dataloader(self):
+        return torch.utils.data.DataLoader(
+            dataset=self.dataset_val_wrap,
+            batch_size=self.batch_size,
+            )
+
+    def test_dataloader(self):
+        return torch.utils.data.DataLoader(
+            dataset=self.dataset_test_wrap,
+            batch_size=self.batch_size,
+            )
