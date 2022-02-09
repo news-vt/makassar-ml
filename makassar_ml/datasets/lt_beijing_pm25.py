@@ -1,3 +1,4 @@
+from __future__ import annotations
 from .beijing_pm25 import BeijingPM25Dataset
 from .timeseries_forecast_wrapper import TimeseriesForecastDatasetWrapper
 import pytorch_lightning as pl
