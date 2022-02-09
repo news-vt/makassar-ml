@@ -1,6 +1,6 @@
 from __future__ import annotations
 import torch
-from ..time2vec import Time2Vec
+from . import Time2Vec
 
 
 # Note that for Transformer decoder target mask,
