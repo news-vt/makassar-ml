@@ -1,1 +1,2 @@
-from .timeseries_transformer import TimeseriesTransformer, create_attn_mask
+from .timeseries_transformer import TimeseriesTransformer
+from .time2vec import Time2Vec
