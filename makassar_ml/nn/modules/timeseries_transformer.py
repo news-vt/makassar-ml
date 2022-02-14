@@ -19,7 +19,16 @@ class TimeseriesTransformer(torch.nn.Module):
         ):
         super().__init__()
 
+        self.n_input_features = n_input_features
+        self.n_output_features = n_output_features
+        self.d_time_embed = d_time_embed
+        self.d_model = d_model
+        self.dropout = dropout
         self.batch_first = batch_first
+        self.n_encoder_layers = n_encoder_layers
+        self.n_decoder_layers = n_decoder_layers
+        self.n_encoder_heads = n_encoder_heads
+        self.n_decoder_heads = n_decoder_heads
 
         # Time embedding.
         self.time_projection = Time2Vec(input_dim=n_input_features, embed_dim=d_time_embed)
