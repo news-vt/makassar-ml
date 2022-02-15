@@ -31,11 +31,12 @@ class TimeseriesTransformer(torch.nn.Module):
         self.n_decoder_heads = n_decoder_heads
 
         # Time embedding.
-        self.time_projection = Time2Vec(input_dim=n_input_features, embed_dim=d_time_embed)
+        # self.time_projection = Time2Vec(input_dim=n_input_features, embed_dim=d_time_embed)
 
         # Linear transformation from input-feature space into arbitrary n-dimension space.
         # This is similar to a word embedding used in NLP tasks.
-        self.encoder_projection = torch.nn.Linear(in_features=d_time_embed, out_features=d_model)
+        # self.encoder_projection = torch.nn.Linear(in_features=d_time_embed, out_features=d_model)
+        self.encoder_projection = torch.nn.Linear(in_features=n_input_features, out_features=d_model)
         self.decoder_projection = torch.nn.Linear(in_features=n_output_features, out_features=d_model)
 
         # Transformer encoder/decoder layers.
@@ -63,11 +64,12 @@ class TimeseriesTransformer(torch.nn.Module):
     def encode(self, src: torch.Tensor) -> torch.Tensor:
 
         # Embed the source into time-feature dimensions.
-        x = self.time_projection(src)
+        # x = self.time_projection(src)
 
         # Transform time embedding into arbitrary feature space
         # for the attention encoder model.
-        x = self.encoder_projection(x)
+        # x = self.encoder_projection(x)
+        x = self.encoder_projection(src)
 
         # Pass the linear transformation through the encoder layers.
         x = self.encoder(x)
