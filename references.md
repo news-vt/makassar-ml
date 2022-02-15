@@ -41,3 +41,5 @@
     - Page 9 contains function for creating example toy datasets.
 11. A Transformer-based Framework for Multivariate Time Series Representation Learning
     - <https://arxiv.org/abs/2010.02803>
+12. Deep Adaptive Input Normalization for Time Series Forecasting
+    - <https://arxiv.org/abs/1902.07892>
