@@ -106,7 +106,7 @@ class BeijingPM25Dataset(CsvTimeseriesDataset):
             self.df[cols] = (self.df[cols] - self.df[cols].mean())/self.df[cols].std()
         # MinMax normalization.
         elif self.normalize == 'minmax':
-            self.df[cols] = (self.df[cols] - self.df[cols].min())/(self.df[cols].max() - self.df[~cols].min())
+            self.df[cols] = (self.df[cols] - self.df[cols].min())/(self.df[cols].max() - self.df[cols].min())
 
         # Create single date column from independent year/month/day columns.
         self.df['datetime'] = pd.to_datetime(self.df[['year','month','day','hour']])
