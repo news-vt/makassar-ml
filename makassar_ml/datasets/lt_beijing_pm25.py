@@ -15,6 +15,7 @@ class BeijingPM25LightningDataModule(pl.LightningDataModule):
         horizon: int, 
         split: float,
         batch_size: int,
+        **kwargs,
         ):
         self.root = root
         self.feature_cols = feature_cols
@@ -23,6 +24,7 @@ class BeijingPM25LightningDataModule(pl.LightningDataModule):
         self.horizon = horizon
         self.split = split
         self.batch_size = batch_size
+        self.kwargs = kwargs
 
     def prepare_data(self):
         # Download the dataset.
@@ -40,6 +42,7 @@ class BeijingPM25LightningDataModule(pl.LightningDataModule):
                 download=False,
                 train=True,
                 split=self.split,
+                **self.kwargs,
                 )
             train_n = len(dataset_train_full)
             train_val_cutoff = train_n - round(train_n*.25) # 75% train, 25% val
@@ -69,6 +72,7 @@ class BeijingPM25LightningDataModule(pl.LightningDataModule):
                 download=False,
                 train=False,
                 split=self.split,
+                **self.kwargs,
                 )
             self.dataset_test_wrap = TimeseriesForecastDatasetWrapper(
                 dataset=self.dataset_test,
