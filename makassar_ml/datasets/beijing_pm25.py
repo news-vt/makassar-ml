@@ -63,8 +63,10 @@ class BeijingPM25Dataset(CsvTimeseriesDataset):
         train: bool = False,
         split: float = 1., # split to use for testing (i.e., split=0.15 means 85% train and 15% test).
         drop_features: list[str] = ['No','cbwd','datetime'], # columns to omit from PyTorch retrieval.
+        normalize: str = None, # Supports ['standard', 'minmax'].
         ):
         self.dataset_root = root / self.dataset_root # Join path elements.
+        self.normalize = normalize
 
         # Downlaod if necessary.
         filename = pathlib.Path(self.dataset_url.rsplit('/', 1)[1])
@@ -89,6 +91,22 @@ class BeijingPM25Dataset(CsvTimeseriesDataset):
             filepath (pathlib.Path): Path to CSV file.
         """
         super().load(filepath)
+
+        # Standard normalization.
+        cols = [
+            'pm2.5',
+            'DEWP',
+            'TEMP',
+            'PRES',
+            'Iws',
+            'Is',
+            'Ir',
+        ]
+        if self.normalize == 'standard':
+            self.df[cols] = (self.df[cols] - self.df[cols].mean())/self.df[cols].std()
+        # MinMax normalization.
+        elif self.normalize == 'minmax':
+            self.df[cols] = (self.df[cols] - self.df[cols].min())/(self.df[cols].max() - self.df[~cols].min())
 
         # Create single date column from independent year/month/day columns.
         self.df['datetime'] = pd.to_datetime(self.df[['year','month','day','hour']])
