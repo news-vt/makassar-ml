@@ -21,21 +21,19 @@ license = {text = "MIT"}
 [project.urls]
 homepage = ""
 
+[build-system]
+requires = ["setuptools ~= 58.0", "cython ~= 0.29.0"]
+
+[project.optional-dependencies]
+tests = [
+    'pytest',
+]
+dev = [
+    'ipykernel',
+]
+
+
 [tool.pytest.ini_options]
 testpaths = [
     "tests",
 ]
-
-[project.optional-dependencies]
-[tool]
-[tool.pdm]
-[tool.pdm.dev-dependencies]
-dev = [
-    "ipykernel",
-    "jupyterthemes",
-    "pytest",
-]
-
-[build-system]
-requires = ["pdm-pep517"]
-build-backend = "pdm.pep517.api"
