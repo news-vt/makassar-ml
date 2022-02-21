@@ -13,3 +13,4 @@ dependencies:
   - pytorch
   - torchvision
   - conda-build
+  - notebook
