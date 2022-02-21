@@ -201,4 +201,3 @@ dependencies:
   - zipp=3.7.0
   - zlib=1.2.11
   - zstd=1.5.2
-prefix: /usr/local/Caskroom/miniforge/base/envs/makassar-ml
