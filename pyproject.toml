@@ -21,6 +21,11 @@ license = {text = "MIT"}
 [project.urls]
 homepage = ""
 
+[tool.pytest.ini_options]
+testpaths = [
+    "tests",
+]
+
 [project.optional-dependencies]
 [tool]
 [tool.pdm]
