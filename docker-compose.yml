@@ -3,7 +3,7 @@ services:
     tensorboard:
         image: tensorflow/tensorflow:latest
         volumes:
-            - ./lightning_logs:/lightning_logs:rw
+            - ~/research/makassar/lightning_logs:/lightning_logs:rw
         command: tensorboard --logdir /lightning_logs --bind_all
         ports:
             - 6006:6006
