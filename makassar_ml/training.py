@@ -1,8 +1,31 @@
 from __future__ import annotations
 import inspect
 import json
+import pandas as pd
 import tensorflow as tf
 import tensorflow.keras as keras
+
+
+def load_metrics(metrics_path: str):
+    """Load model metrics from file."""
+    with open(metrics_path, 'r') as f:
+        return json.load(f)
+
+
+def load_history(history_path: str):
+    """Load model history from file."""
+    return pd.read_csv(history_path)
+
+
+def load_trained_model(
+    checkpoint_path: str,
+    ) -> tuple[keras.models.Model]:
+    """Helper to load a saved model."""
+    model = keras.models.load_model(
+        checkpoint_path, 
+        custom_objects=keras.utils.get_custom_objects(),
+    )
+    return model
 
 
 def build_model_from_hparams(func):
