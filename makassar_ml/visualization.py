@@ -18,6 +18,24 @@ def plot_metric(history: dict, metric: str) -> plt.Figure:
     return fig
 
 
+def plot_feature_partitions(
+    train_df: pd.DataFrame,
+    val_df: pd.DataFrame,
+    test_df: pd.DataFrame,
+    features: list[str],
+    x_key: str,
+    figsize: list[int] = (15,15),
+    ) -> plt.Figure:
+    """Plots features within train/val/test dataframes."""
+    fig, axs = plt.subplots(nrows=len(features), figsize=figsize)
+    for i,key in enumerate(features):
+        sns.lineplot(data=train_df, x=x_key, y=key, label='train', ax=axs[i])
+        sns.lineplot(data=val_df, x=x_key, y=key, label='val', ax=axs[i])
+        sns.lineplot(data=test_df, x=x_key, y=key, label='test', ax=axs[i])
+        axs[i].legend(loc='upper right')
+    return fig
+
+
 def plot_input_output(
     df: pd.DataFrame,
     pred: tf.Tensor,
