@@ -3,7 +3,6 @@ import tensorflow as tf
 import tensorflow.keras as keras
 
 
-@keras.utils.register_keras_serializable()
 class PointWiseFeedForwardLayer(keras.layers.Layer):
     def __init__(self, dims: list[int], activation: str = 'gelu', **kwargs):
         """Generic point-wise feed forward layer subnetwork.
@@ -44,10 +43,7 @@ class PointWiseFeedForwardLayer(keras.layers.Layer):
         })
         return config
 
-# # Update custom objects dictionary.
-# keras.utils.get_custom_objects()['PointWiseFeedForwardLayer'] = PointWiseFeedForwardLayer
 
-@keras.utils.register_keras_serializable()
 class TransformerEncoderLayer(keras.layers.Layer):
     def __init__(self,
         model_dim: int,
@@ -157,10 +153,6 @@ class TransformerEncoderLayer(keras.layers.Layer):
         })
         return config
 
-# # Update custom objects dictionary.
-# keras.utils.get_custom_objects()['TransformerEncoderLayer'] = TransformerEncoderLayer
-
-@keras.utils.register_keras_serializable()
 class TransformerDecoderLayer(keras.layers.Layer):
     def __init__(self,
         model_dim: int,
@@ -316,5 +308,8 @@ class TransformerDecoderLayer(keras.layers.Layer):
         })
         return config
 
-# # Update custom objects dictionary.
-# keras.utils.get_custom_objects()['TransformerDecoderLayer'] = TransformerDecoderLayer
+
+# Update custom objects dictionary.
+keras.utils.get_custom_objects()['PointWiseFeedForwardLayer'] = PointWiseFeedForwardLayer
+keras.utils.get_custom_objects()['TransformerEncoderLayer'] = TransformerEncoderLayer
+keras.utils.get_custom_objects()['TransformerDecoderLayer'] = TransformerDecoderLayer

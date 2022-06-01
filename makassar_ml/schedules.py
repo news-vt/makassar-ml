@@ -14,7 +14,6 @@ def LinearWarmupLearningRateScheduleWrapper(base):
 
     # Wrapper class.
     name = f"LinearWarmup{base.__name__}"
-    @keras.utils.register_keras_serializable(name=name)
     class Wrapper(base):
         def __init__(self, 
             warmup_learning_rate: float,
@@ -49,8 +48,8 @@ def LinearWarmupLearningRateScheduleWrapper(base):
     # Override the wrapper class name as seen by Python.
     Wrapper.__name__ = name
 
-    # # Add this new custom wrapper to the list of custom objects.
-    # keras.utils.get_custom_objects()[Wrapper.__name__] = Wrapper
+    # Add this new custom wrapper to the list of custom objects.
+    keras.utils.get_custom_objects()[Wrapper.__name__] = Wrapper
 
     # Return the wrapper.
     return Wrapper

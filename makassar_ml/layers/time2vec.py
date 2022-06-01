@@ -2,7 +2,6 @@ import tensorflow as tf
 import tensorflow.keras as keras
 
 
-@keras.utils.register_keras_serializable()
 class Time2Vec(keras.layers.Layer):
     def __init__(self, embed_dim: int, activation: str = 'sin', **kwargs):
         """Vector embedding representation of time.
@@ -111,8 +110,8 @@ class Time2Vec(keras.layers.Layer):
         return config
 
 
-# # Update custom objects dictionary.
-# keras.utils.get_custom_objects()['Time2Vec'] = Time2Vec
+# Update custom objects dictionary.
+keras.utils.get_custom_objects()['Time2Vec'] = Time2Vec
 
 
 
