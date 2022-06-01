@@ -1,1 +1,1 @@
-from . import datasets, layers, visualization, training, schedules
+from . import datasets, layers, models, schedules, training, visualization
