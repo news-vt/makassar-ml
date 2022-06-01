@@ -1,7 +1,30 @@
 from __future__ import annotations
+import inspect
 import json
 import tensorflow as tf
 import tensorflow.keras as keras
+
+
+def build_model_from_hparams(func):
+    """Generalized model build and compile from hyperparameters."""
+    def wrapper(hparams: dict, compile_params: dict) -> keras.Model:
+        """Builds model using given hyperparameters for both model and optimizer, and compile parameters for compilation."""
+        # Extract paramters needed for the model.
+        model_params = {k: hparams[k] for k in inspect.signature(func).parameters if k in hparams}
+        # Build model.
+        model = func(**model_params)
+        # Configure optimizer.
+        optim = keras.optimizers.get({
+            'class_name': hparams['optim'],
+            'config': {
+                'lr': hparams['lr'],
+            },
+        })
+        # Compile the model.
+        model.compile(optimizer=optim, loss=compile_params['loss'], metrics=compile_params['metrics'])
+        return model
+    return wrapper
+
 
 def train_evaluate_model(
     model,
