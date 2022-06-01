@@ -154,33 +154,18 @@ def train_evaluate_for_dataset(
     model_name: str,
     build_model_func: Callable[[], keras.Model],
     dataset_loader_func: Callable[[int], tuple[tf.data.Dataset, tf.data.Dataset, tf.data.Dataset]],
-    # params: dict,
-    # compile_params: dict,
-    # in_seq_len: int,
-    # out_seq_len: int,
-    # shift: int,
-    # split: tuple[float, float, float],
-    # in_feat: list[str],
-    # out_feat: list[str],
     metric_list: list[str],
     batch_size: int = 128,
-    # shuffle: bool = False,
     strategy: tf.distribute.Strategy = tf.distribute.get_strategy(),
     epochs: int = 10,
-    table_header: list = None,
-    table_omit_cols: str|list[str] = None,
     checkpoint_root: str = None,
-    image_root: str = None,
-    table_root: str = None,
-    ) -> tuple[keras.models.Model, dict, dict, dict, pd.DataFrame]:
+    ) -> tuple[keras.Model, dict, dict]:
     """Train and evaluate a model on a given dataset.
 
     If checkpoint exists then the model is loaded in place of training.
     """
     # Ensure roots are path objects.
     checkpoint_root = ensure_path(checkpoint_root)
-    image_root = ensure_path(image_root)
-    table_root = ensure_path(table_root)
 
     # Train and evaluate model.
     checkpoint_path = checkpoint_root/model_name/'model.h5'
