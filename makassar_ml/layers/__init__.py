@@ -1,2 +1,3 @@
 from .time2vec import Time2Vec
 from .transformer import PointWiseFeedForwardLayer, TransformerEncoderLayer, TransformerDecoderLayer
+from .linear_embedding_2d import LinearEmbedding2D
