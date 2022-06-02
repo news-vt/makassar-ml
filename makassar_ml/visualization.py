@@ -69,6 +69,8 @@ def plot_input_output(
     # Plot all output features against truth.
     subfigs[1].suptitle('Output Features', fontsize='x-large')
     axs = subfigs[1].subplots(nrows=len(out_feat), ncols=1, sharex=True, squeeze=False)
+    # Predictions are batched, so flatten them for plotting.
+    pred = tf.reshape(pred, shape=(-1, pred.shape[-1]))
     for r, key in enumerate(out_feat):
         sns.lineplot(
             data=df,
