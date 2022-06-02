@@ -46,3 +46,6 @@ class LinearEncoding2D(keras.layers.Layer):
             tf.TensorShape: Output shape (seq, embed_dim).
         """
         return input_shape
+
+# Update custom objects dictionary.
+keras.utils.get_custom_objects()['LinearEncoding2D'] = LinearEncoding2D

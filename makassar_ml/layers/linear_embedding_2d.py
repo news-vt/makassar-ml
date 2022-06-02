@@ -70,3 +70,6 @@ class LinearEmbedding2D(keras.layers.Layer):
             'embed_dim': self.embed_dim,
         })
         return config
+
+# Update custom objects dictionary.
+keras.utils.get_custom_objects()['LinearEmbedding2D'] = LinearEmbedding2D
