@@ -8,12 +8,7 @@ class Time2Vec(keras.layers.Layer):
 
         Based on the original concept proposed by Kazemi et al., 2019 (https://arxiv.org/abs/1907.05321).
 
-        This layer operates on a single time step with N feature dimensions. When using this layer for multi-time-step
-        datasets, you must pass this layer through a `keras.layers.TimeDistributed` layer to multiplex this for all time steps.
-
-        Note that embedding is done on a per-feature basis. For example, using an input record with 7 features (i.e., shape=(1, 7))
-        and an embeddding dimension of 10, the resulting embedding would have 70 dimensions (i.e., shape=(1, 70)). This is because
-        each of the 7 features gets a 10-dimensional embedding.
+        Input is assumed to have dimension `(batch,seq,feat)`.
 
         Args:
             embed_dim (int): Length of the time embedding vector.
@@ -31,19 +26,26 @@ class Time2Vec(keras.layers.Layer):
         else:
             raise ValueError(f'Unsupported periodic activation function "{activation}"')
 
-    def build(self, input_shape: list[int]):
+    def build(self, input_shape: tf.TensorShape):
+        """Creates the variables of the layer.
+
+        Args:
+            input_shape (tf.TensorShape): Shape of the input.
+        """
+        # Embedding length must be longer than feature dimension.
+        assert self.embed_dim > input_shape[-1]
 
         # Weight and bias term for linear portion (i = 0)
         # of embedding.
         self.w_linear = self.add_weight(
             name='w_linear',
-            shape=(input_shape[1],),
+            shape=(input_shape[1],1,),
             initializer='uniform',
             trainable=True,
         )
         self.b_linear = self.add_weight(
             name='b_linear',
-            shape=(input_shape[1],),
+            shape=(input_shape[1],1,),
             initializer='uniform',
             trainable=True,
         )
@@ -52,13 +54,13 @@ class Time2Vec(keras.layers.Layer):
         # portion (1 <= i <= k) of embedding.
         self.w_periodic = self.add_weight(
             name='w_periodic',
-            shape=(1, input_shape[1], self.embed_dim-1,),
+            shape=(input_shape[-1],self.embed_dim-input_shape[-1],), # (feat,embed_dim-feat)
             initializer='uniform',
             trainable=True,
         )
         self.b_periodic = self.add_weight(
             name='b_periodic',
-            shape=(1, input_shape[1], self.embed_dim-1,),
+            shape=(input_shape[1],self.embed_dim-input_shape[-1],), # (seq,embed_dim-feat)
             initializer='uniform',
             trainable=True,
         )
@@ -67,34 +69,32 @@ class Time2Vec(keras.layers.Layer):
         """Embed input into linear and periodic feature components.
 
         Args:
-            x (tf.Tensor): Input tensor with shape (sequence_length, feature_size)
+            x (tf.Tensor): Input tensor with shape `(batch,seq,feat)`.
 
         Returns:
-            tf.Tensor: Output tensor with shape (sequence_length, feature_size * embed_dim)
+            tf.Tensor: Output tensor with shape `(batch,seq,embed_dim)`.
         """
-        # Linear term (i = 0).
-        embed_linear = self.w_linear * x + self.b_linear
-        embed_linear = tf.expand_dims(embed_linear, axis=-1) # Reshape to (sequence_length, feature_size, 1)
+        # Linear terms.
+        embed_linear = self.w_linear * x + self.b_linear # (batch,seq,feat)
 
-        # Periodic terms (1 <= i <= k).
-        inner = keras.backend.dot(x, self.w_periodic) + self.b_periodic
-        embed_periodic = self.activation_func(inner) # (sequence_length, feature_size, embed_dim - 1)
+        # Periodic terms.
+        inner = tf.matmul(x, self.w_periodic) + self.b_periodic
+        embed_periodic = self.activation_func(inner) # (batch,seq,embed_dim-feat)
 
         # Return concatenated linear and periodic features.
-        ret = tf.concat([embed_linear, embed_periodic], axis=-1) # (sequence_length, feature_size, embed_dim)
-        ret = tf.reshape(ret, (-1, x.shape[1]*self.embed_dim)) # (sequence_length, feature_size * embed_dim)
+        ret = tf.concat([embed_linear, embed_periodic], axis=-1) # (batch,seq,embed_dim)
         return ret
 
     def compute_output_shape(self, input_shape: tf.TensorShape) -> tf.TensorShape:
         """Determines the output shape for a given input shape.
 
         Args:
-            input_shape (tf.TensorShape): Input shape (sequence_length, feature_size).
+            input_shape (tf.TensorShape): Input shape `(batch,seq,feat)`.
 
         Returns:
-            tf.TensorShape: Output shape (sequence_length, feature_size * embed_dim).
+            tf.TensorShape: Output shape `(batch,seq,embed_dim)`.
         """
-        return tf.TensorShape((input_shape[0], input_shape[1]*self.embed_dim))
+        return tf.TensorShape((input_shape[0], input_shape[1], self.embed_dim))
 
     def get_config(self) -> dict:
         """Retreive custom layer configuration for future loading.
