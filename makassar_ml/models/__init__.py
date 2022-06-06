@@ -1,1 +1,1 @@
-from . import lstm_net, transformer_encoder_net
+from . import lstm_net, transformer_time2vec_encoder_pool_fc
