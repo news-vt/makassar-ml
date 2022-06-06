@@ -1,7 +1,7 @@
 from __future__ import annotations
 import tensorflow.keras as keras
 
-def build_lstm_net(
+def build_model(
     in_seq_len: int,
     in_feat: int,
     out_feat: int,

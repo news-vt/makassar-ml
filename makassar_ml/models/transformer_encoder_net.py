@@ -4,7 +4,7 @@ import tensorflow.keras as keras
 from ..layers import Time2Vec, TransformerEncoderLayer
 
 
-def build_transformer_encoder_net(
+def build_model(
     in_seq_len: int,
     in_feat: int,
     out_feat: int,

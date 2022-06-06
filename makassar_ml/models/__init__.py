@@ -1,2 +1,1 @@
-from .transformer_encoder_net import build_transformer_encoder_net
-from .lstm_net import build_lstm_net
+from . import lstm_net, transformer_encoder_net
