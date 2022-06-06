@@ -65,6 +65,7 @@ def train_evaluate_model(
     checkpoint_path: str,
     history_path: str = None,
     metrics_path: str = None,
+    callbacks: list = [],
     ) -> tuple[keras.models.Model, dict, dict]:
     """Trains and evaluates a given model on the given datasets.
 
@@ -77,6 +78,7 @@ def train_evaluate_model(
         checkpoint_path (str): Path to checkpoint file
         history_path (str, optional): Path to history CSV file. If None is provided, then the file will be located at the same path as the checkpoint file with name `"history.csv"`. Defaults to None.
         metrics_path (str, optional): Path to metrics JSON file. If None is provided, then the file will be located at the same path as the checkpoint file with name `"metrics.json"`. Defaults to None.
+        callbacks (list, optional): Additional callbacks during training. Defaults to an empty list.
 
     Returns:
         tuple[keras.models.Model, dict, dict: Tuple of trained model, history dictionary, and metrics dictionary.
@@ -90,7 +92,7 @@ def train_evaluate_model(
         metrics_path = checkpoint_path.parent/'metrics.json'
 
     # List of callbacks during training.
-    callbacks = [
+    callbacks.extend([
         # Save model checkpoint after every epoch.
         keras.callbacks.ModelCheckpoint(
             filepath=checkpoint_path,
@@ -104,15 +106,15 @@ def train_evaluate_model(
             filename=history_path,
             append=False,
         ),
-        # Early stopping when performance does not improve across N epochs.
-        tf.keras.callbacks.EarlyStopping(
-            monitor='val_loss',
-            mode='auto',
-            patience=10,
-            # min_delta=0.001,
-            restore_best_weights=True,
-        ),
-    ]
+        # # Early stopping when performance does not improve across N epochs.
+        # tf.keras.callbacks.EarlyStopping(
+        #     monitor='val_loss',
+        #     mode='auto',
+        #     patience=10,
+        #     # min_delta=0.001,
+        #     restore_best_weights=True,
+        # ),
+    ])
 
     # Train the model.
     history = model.fit(datagen_train,
@@ -159,6 +161,7 @@ def train_evaluate_for_dataset(
     strategy: tf.distribute.Strategy = tf.distribute.get_strategy(),
     epochs: int = 10,
     checkpoint_root: str = None,
+    callbacks: list = [],
     ) -> tuple[keras.Model, dict, dict]:
     """Train and evaluate a model on a given dataset.
 
@@ -212,6 +215,7 @@ def train_evaluate_for_dataset(
             checkpoint_path=checkpoint_path,
             history_path=history_path,
             metrics_path=metrics_path,
+            callbacks=callbacks,
         )
 
     return model, hist, met
