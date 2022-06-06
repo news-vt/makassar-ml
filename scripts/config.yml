@@ -1,0 +1,8 @@
+roots:
+  dataset_root: ~/research/makassar/datasets
+  project_root: ~/research/makassar
+  checkpoint_root: ~/research/makassar/checkpoints
+  image_root: ~/research/makassar/images
+  table_root: ~/research/makassar/tables
+  hp_tuning_root: ~/research/makassar/hp_tuning
+  keras_tuner_path: ~/research/makassar/keras_tuner
