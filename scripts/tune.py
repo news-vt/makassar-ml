@@ -61,9 +61,13 @@ def get_opts() -> argparse.Namespace:
         action='store_true',
         help='Count number of combinations.'
     )
-    parser.add_argument('--dump',
+    parser.add_argument('--dump-grid',
         action='store_true',
         help='Dump parameter grid as JSON.'
+    )
+    parser.add_argument('--dump-json',
+        action='store_true',
+        help='Dump configuration as JSON.'
     )
     parser.add_argument('--no-plot',
         action='store_true',
@@ -248,11 +252,16 @@ if __name__ == '__main__':
         logger.info(len(grid))
 
     # Dump parameter grid as JSON.
-    elif opts.dump:
+    elif opts.dump_grid:
         import json
         from sklearn.model_selection import ParameterGrid
         grid = ParameterGrid(ml.tuning.config2parameterdict(config))
         logger.info(json.dumps(list(grid), indent=4))
+
+    # Dump configuration as JSON.
+    elif opts.dump_json:
+        import json
+        logger.info(json.dumps(config, indent=4))
 
     # Run main tuning function.
     else:
