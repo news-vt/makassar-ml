@@ -37,11 +37,12 @@ def config2parameterdict(config: dict) -> dict:
         """Helper to parse a configuration node."""
         # Configuration.
         if isinstance(node, dict):
-            # Single value.
+            # Single value, return as list of 1 element.
             if 'value' in node:
                 return [node['value']]
+            # Multiple values, return as-is.
             elif 'values' in node:
-                return [node['values']]
+                return node['values']
             # Range of values.
             elif 'range' in node:
                 return list(np.arange(node['range']['min'], node['range']['max'], node['range']['step']))
