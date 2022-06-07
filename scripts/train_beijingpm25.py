@@ -12,16 +12,10 @@ if path not in sys.path:
 
 # Complete imports.
 import argparse
-# import inspect
 import logging
 import makassar_ml as ml
-# import matplotlib.pyplot as plt
-# import numpy as np
-# import pandas as pd
-# import seaborn as sns
 import tensorflow as tf
 import tensorflow.keras as keras
-from tqdm.keras import TqdmCallback
 import yaml
 
 # Set random seeds.
@@ -29,7 +23,8 @@ SEED = 0
 tf.random.set_seed(SEED) # Only this works on ARC (since tensorflow==2.4).
 
 # Setup logging (useful for ARC systems).
-logger = logging.getLogger(__name__)
+# logger = logging.getLogger(__name__)
+logger = logging.getLogger()
 logger.setLevel(logging.DEBUG) # Must be lowest of all handlers listed below.
 while logger.hasHandlers(): logger.removeHandler(logger.handlers[0]) # Clear all existing handlers.
 
@@ -103,7 +98,6 @@ def main(config: dict):
         strategy=strategy,
         epochs=config['train']['epochs'],
         checkpoint_root=config['roots']['checkpoint_root'],
-        callbacks=[TqdmCallback(verbose=2)]
     )
     model.summary(print_fn=logger.info)
 
