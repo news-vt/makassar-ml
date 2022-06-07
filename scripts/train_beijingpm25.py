@@ -14,6 +14,7 @@ if path not in sys.path:
 import argparse
 import logging
 import makassar_ml as ml
+import shutil
 import tensorflow as tf
 import tensorflow.keras as keras
 import yaml
@@ -52,11 +53,23 @@ def get_opts() -> argparse.Namespace:
         type=str,
         help='Configuration file.'
     )
+    parser.add_argument('--force',
+        action='store_true',
+        help='Force train a new model by removing any existing checkpoints.'
+    )
     opts = parser.parse_args()
     return opts
 
 
-def main(config: dict):
+def main(config: dict, force: bool = False):
+
+    # Force re-training by removing old checkpoint if necessary.
+    if force:
+        logger.info('Force training')
+        path = Path(config['roots']['checkpoint_root'])/config['model']['name']
+        if path.exists():
+            shutil.rmtree(path)
+            logger.info(f"Removed old checkpoint directory: {path}")
 
     # Set training strategy.
     strategy = tf.distribute.get_strategy()
@@ -178,4 +191,4 @@ if __name__ == '__main__':
     # print(json.dumps(config, indent=4))
 
     # Run main training function.
-    main(config)
+    main(config, opts.force)
