@@ -43,7 +43,7 @@ def _config2dict(config: dict, parse_node: Callable[[object], object]) -> dict:
     # Parse training optimier.
     if 'optimizer' in config['train']:
         if 'parameters' in config['train']['optimizer']:
-            for key,val in config['train']['optimizer']['parameters']:
+            for key,val in config['train']['optimizer']['parameters'].items():
                 params[key] = parse_node(val)
 
     return params
