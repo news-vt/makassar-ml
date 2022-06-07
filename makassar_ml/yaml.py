@@ -2,8 +2,8 @@ import os
 import re
 import yaml
 
-# Extract environment variables of the form `${ENV}`.
-path_matcher = re.compile(r'.*\$\{([^}^{]+)\}.*')
+# Extract environment variables of the form `$ENV` or `${ENV}`.
+path_matcher = re.compile(r'.*(\$\{([^}^{]+)\})|(\$([^}^{]+)).*')
 def path_constructor(loader, node):
     return os.path.expandvars(node.value)
 
