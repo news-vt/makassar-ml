@@ -1,7 +1,7 @@
 # Model definition.
 model:
   name: transformer_time2vec_encoder_pool_fc
-  params:
+  parameters:
     in_seq_len: 24
     in_feat: 5
     out_feat: 1
@@ -20,7 +20,7 @@ train:
   # Optimizer.
   optimizer:
     name: adam
-    params:
+    parameters:
       lr: 0.001
 
   # Compile parameters.
@@ -31,7 +31,7 @@ train:
 # Dataset.
 dataset:
   name: beijingpm25
-  params:
+  parameters:
     path: ${HOME}/research/makassar/datasets/beijing_pm25
     in_feat: ['TEMP','PRES','Iws','Is','Ir']
     out_feat: ['DEWP']

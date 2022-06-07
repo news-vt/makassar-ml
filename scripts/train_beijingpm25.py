@@ -86,14 +86,14 @@ def main(config: dict, force: bool = False):
         # Get build function for specific model.
         build_model = getattr(ml.models, config['model']['name']).build_model
         model = build_model(
-            **config['model']['params']
+            **config['model']['parameters']
         )
 
         # Configure optimizer.
         # optim = keras.optimizers.Adam(learning_rate=lr_schedule)
         optim = keras.optimizers.get({
         'class_name': config['train']['optimizer']['name'],
-            'config': config['train']['optimizer']['params'],
+            'config': config['train']['optimizer']['parameters'],
         })
 
         # Compile the model.
@@ -105,7 +105,7 @@ def main(config: dict, force: bool = False):
 
     def dataset_loader_func(batch_size: int) -> tuple[tf.data.Dataset, tf.data.Dataset, tf.data.Dataset]:
         return ml.datasets.beijingpm25.load_beijingpm25_ds(
-            **config['dataset']['params'],
+            **config['dataset']['parameters'],
             batch_size=batch_size,
         )
 
@@ -132,8 +132,8 @@ def main(config: dict, force: bool = False):
 
     # Load the data in dataframe form.
     df_train, df_val, df_test = ml.datasets.beijingpm25.load_beijingpm25_df(
-        split=config['dataset']['params']['split'],
-        path=config['dataset']['params']['path'],
+        split=config['dataset']['parameters']['split'],
+        path=config['dataset']['parameters']['path'],
     )
     # Load the data in dataset form.
     dataset_train, dataset_val, dataset_test = dataset_loader_func(config['train']['batch_size'])
@@ -169,11 +169,11 @@ def main(config: dict, force: bool = False):
         fig = ml.visualization.plot_input_output(
             df=locals()[f"df_{label}"],
             pred=locals()[f"{label}_pred"],
-            in_seq_len=config['dataset']['params']['in_seq_len'],
-            out_seq_len=config['dataset']['params']['out_seq_len'],
-            shift=config['dataset']['params']['shift'],
-            in_feat=config['dataset']['params']['in_feat'],
-            out_feat=config['dataset']['params']['out_feat'],
+            in_seq_len=config['dataset']['parameters']['in_seq_len'],
+            out_seq_len=config['dataset']['parameters']['out_seq_len'],
+            shift=config['dataset']['parameters']['shift'],
+            in_feat=config['dataset']['parameters']['in_feat'],
+            out_feat=config['dataset']['parameters']['out_feat'],
             x_key='datetime',
         )
         # fig.suptitle(f"{label[0].upper()}{label[1:]} Data", fontsize='xx-large')
