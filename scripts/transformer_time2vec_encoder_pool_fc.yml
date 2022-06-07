@@ -1,8 +1,21 @@
+# Dataset.
+dataset:
+  name: beijingpm25
+  parameters:
+    path: ${HOME}/research/makassar/datasets/beijing_pm25
+    in_feat: &ID_in_feat ['TEMP','PRES','Iws','Is','Ir']
+    out_feat: &ID_out_feat ['DEWP']
+    in_seq_len: &ID_in_seq_len 24 # Alias for future use.
+    out_seq_len: &ID_out_seq_len 1 # Alias for future use.
+    shift: 1
+    split: [0.7,0.2,0.1]
+    shuffle: False
+
 # Model definition.
 model:
   name: transformer_time2vec_encoder_pool_fc
   parameters:
-    in_seq_len: 24
+    in_seq_len: *ID_in_seq_len
     in_feat: 5
     out_feat: 1
     fc_units: [64,64]
@@ -27,19 +40,6 @@ train:
   compile:
     loss: mse
     metrics: ['mae','mape']
-
-# Dataset.
-dataset:
-  name: beijingpm25
-  parameters:
-    path: ${HOME}/research/makassar/datasets/beijing_pm25
-    in_feat: ['TEMP','PRES','Iws','Is','Ir']
-    out_feat: ['DEWP']
-    in_seq_len: 24
-    out_seq_len: 1
-    shift: 1
-    split: [0.7,0.2,0.1]
-    shuffle: False
 
 # Root directory paths.
 roots:
