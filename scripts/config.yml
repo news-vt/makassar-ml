@@ -1,8 +1,52 @@
+# Model definition.
+model:
+  name: transformer_time2vec_encoder_pool_fc
+  params:
+    in_seq_len: 24
+    in_feat: 5
+    out_feat: 1
+    fc_units: [64,64]
+    embed_dim: 64
+    n_heads: 8
+    ff_dim: 256
+    dropout: 0.1
+    n_encoders: 3
+
+  # Optimizer.
+  optimizer:
+    name: adam
+    params:
+      lr: 0.001
+
+  # Compile parameters.
+  compile:
+    loss: mse
+    metrics: ['mae','mape']
+
+# Training configuration.
+train:
+  batch_size: 128
+  epochs: 10
+
+# Dataset.
+dataset:
+  name: beijingpm25
+  params:
+    path: ${HOME}/research/makassar/datasets/beijing_pm25
+    in_feat: ['TEMP','PRES','Iws','Is','Ir']
+    out_feat: ['DEWP']
+    in_seq_len: 24
+    out_seq_len: 1
+    shift: 1
+    split: [0.7,0.2,0.1]
+    shuffle: False
+
+# Root directory paths.
 roots:
-  dataset_root: ~/research/makassar/datasets
-  project_root: ~/research/makassar
-  checkpoint_root: ~/research/makassar/checkpoints
-  image_root: ~/research/makassar/images
-  table_root: ~/research/makassar/tables
-  hp_tuning_root: ~/research/makassar/hp_tuning
-  keras_tuner_path: ~/research/makassar/keras_tuner
+  # dataset_root: ~/research/makassar/datasets
+  # project_root: ~/research/makassar
+  checkpoint_root: $HOME/research/makassar/checkpoints
+  image_root: ${HOME}/research/makassar/images
+  table_root: ${HOME}/research/makassar/tables
+  hp_tuning_root: ${HOME}/research/makassar/hp_tuning
+  keras_tuner_path: ${HOME}/research/makassar/keras_tuner
