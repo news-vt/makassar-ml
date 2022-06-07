@@ -11,3 +11,4 @@ dependencies:
   - conda-build
   - notebook
   - jupyter
+  - pyyaml
