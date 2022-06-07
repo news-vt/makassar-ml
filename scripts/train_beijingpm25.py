@@ -63,6 +63,14 @@ def get_opts() -> argparse.Namespace:
 
 def main(config: dict, force: bool = False):
 
+    # Validate model name.
+    if not hasattr(ml.models, config['model']['name']):
+        raise ValueError(f"unknown model {config['model']['name']}")
+
+    # Validate dataset name.
+    if not hasattr(ml.datasets, config['dataset']['name']):
+        raise ValueError(f"unknown dataset {config['dataset']['name']}")
+
     # Force re-training by removing old checkpoint if necessary.
     if force:
         logger.info('Force training')
