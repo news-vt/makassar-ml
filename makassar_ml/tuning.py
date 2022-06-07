@@ -7,6 +7,7 @@ from typing import Callable
 import numpy as np
 import pandas as pd
 from pathlib import Path
+import shutil
 from sklearn.model_selection import ParameterGrid
 import tensorflow as tf
 import tensorflow.keras as keras
@@ -144,7 +145,22 @@ def hp_gridsearch(
     n_grid = len(grid)
     logger.info(f"[{model_name}] Evaluating {n_grid} hyperparameter combinations")
 
-    # Save parameter grid to file.
+    # Validate any previous parameter grid runs to ensure parameters were the same.
+    # If same, then do nothing. If different, then remove all old contents.
+    parameter_grid_path = tuning_model_root/'parameter_grid.json'
+    if parameter_grid_path.exists():
+        with open(tuning_model_root/'parameter_grid.json', 'r') as f:
+            old_grid = json.load(f)
+
+        # New grid is different, so overwrite everything.
+        new_grid = list(grid)
+        if old_grid != new_grid:
+
+            # Recreate tuning directory.
+            shutil.rmtree(tuning_model_root)
+            tuning_model_root.mkdir(parents=True, exist_ok=True)
+
+    # Update parameter grid file.
     with open(tuning_model_root/'parameter_grid.json', 'w') as f:
         json.dump(list(grid), f, default=lambda o: '<not serializable>')
 
