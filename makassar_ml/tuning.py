@@ -1,6 +1,7 @@
 from __future__ import annotations
 import ast
 import json
+import keras_tuner
 import logging
 from typing import Callable
 import numpy as np
@@ -68,6 +69,46 @@ def config2parameterdict(config: dict) -> dict:
         # Single value.
         else:
             return [node]
+
+    return _config2dict(config, parse_node)
+
+
+def config2hyperparameterdict(config: dict) -> dict:
+    """Converts configuration dictionary into parameters acceptable for Keras Tuner."""
+
+    # Create hyperparameter object.
+    hp = keras_tuner.HyperParameters()
+
+    def parse_node(key: str, node: object) -> object:
+        """Helper to parse a configuration node."""
+        # Configuration.
+        if isinstance(node, dict):
+            # Single value, return as fixed element.
+            if 'value' in node:
+                return hp.Fixed(
+                    name=key,
+                    value=node['value'],
+                )
+            # Multiple values, return choice of list of strings.
+            elif 'values' in node:
+                return hp.Choice(
+                    name=key,
+                    values=[str(item) for item in node['values']],
+                )
+            # Range of values.
+            elif 'range' in node:
+                return hp.Float(
+                    name=key,
+                    min_value=node['range']['min'],
+                    max_value=node['range']['max'],
+                    step=node['range']['step'],
+                )
+        # Single value.
+        else:
+            return hp.Fixed(
+                    name=key,
+                    value=node,
+                )
 
     return _config2dict(config, parse_node)
 
