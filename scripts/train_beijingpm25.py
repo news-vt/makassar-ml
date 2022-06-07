@@ -109,6 +109,12 @@ def main(config: dict, force: bool = False):
             batch_size=batch_size,
         )
 
+    # Create callback list if any were specified.
+    callbacks = []
+    if 'callbacks' in config['train']:
+        for key, cb_params in config['train']['callbacks'].items():
+            callbacks.append(getattr(keras.callbacks, key)(**cb_params))
+
     # Train and evaluate the model.
     model, hist, met = ml.training.train_evaluate_for_dataset(
         model_name=config['model']['name'],
@@ -119,6 +125,7 @@ def main(config: dict, force: bool = False):
         strategy=strategy,
         epochs=config['train']['epochs'],
         checkpoint_root=config['roots']['checkpoint_root'],
+        callbacks=callbacks,
     )
     model.summary(print_fn=logger.info)
 

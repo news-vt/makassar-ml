@@ -63,6 +63,14 @@ train:
     loss: mse
     metrics: ['mae','mape']
 
+  # Training callbacks.
+  callbacks:
+    EarlyStopping:
+      monitor: val_loss
+      mode: auto
+      patience: 10
+      restore_best_weights: True
+
 # Root directory paths.
 roots:
   project_root: &ID_project_root ${HOME}/research/makassar/

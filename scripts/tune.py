@@ -135,6 +135,12 @@ def main(
             batch_size=batch_size,
         )
 
+    # Create callback list if any were specified.
+    callbacks = []
+    if 'callbacks' in config['train']:
+        for key, cb_params in config['train']['callbacks'].items():
+            callbacks.append(getattr(keras.callbacks, key)(**cb_params))
+
     # Convert config into parameter dictionary.
     parameterdict = ml.tuning.config2parameterdict(config)
 
@@ -149,6 +155,7 @@ def main(
         strategy=strategy,
         epochs=config['train']['epochs'],
         tuning_root=config['roots']['hp_tuning_root'],
+        callbacks=callbacks,
     )
     model.summary(print_fn=logger.info)
 
