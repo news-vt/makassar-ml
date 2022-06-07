@@ -43,8 +43,6 @@ dataset:
 
 # Root directory paths.
 roots:
-  # dataset_root: ~/research/makassar/datasets
-  # project_root: ~/research/makassar
   checkpoint_root: $HOME/research/makassar/checkpoints
   image_root: ${HOME}/research/makassar/images
   table_root: ${HOME}/research/makassar/tables
