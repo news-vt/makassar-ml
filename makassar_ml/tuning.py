@@ -38,13 +38,13 @@ def _config2dict(config: dict, parse_node: Callable[[object], object]) -> dict:
     # Parse model.
     if 'parameters' in config['model']:
         for key,val in config['model']['parameters'].items():
-            params[key] = parse_node(val)
+            params[key] = parse_node(key, val)
 
     # Parse training optimier.
     if 'optimizer' in config['train']:
         if 'parameters' in config['train']['optimizer']:
             for key,val in config['train']['optimizer']['parameters'].items():
-                params[key] = parse_node(val)
+                params[key] = parse_node(key, val)
 
     return params
 
@@ -52,7 +52,7 @@ def _config2dict(config: dict, parse_node: Callable[[object], object]) -> dict:
 def config2parameterdict(config: dict) -> dict:
     """Converts configuration dictionary into parameters acceptable for `ParameterGrid`."""
 
-    def parse_node(node: object) -> object:
+    def parse_node(key: str, node: object) -> object:
         """Helper to parse a configuration node."""
         # Configuration.
         if isinstance(node, dict):
