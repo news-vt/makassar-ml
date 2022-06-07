@@ -193,7 +193,7 @@ if __name__ == '__main__':
     config_path = Path(opts.config)
     if config_path.exists():
         with open(config_path) as f:
-            config = yaml.load(f, Loader=ml.yaml.EnvVarLoader)
+            config = yaml.load(f, Loader=ml.yaml.ConfigLoader)
 
     # import json
     # print(json.dumps(config, indent=4))
