@@ -66,7 +66,7 @@ def train_evaluate_model(
     history_path: str = None,
     metrics_path: str = None,
     callbacks: list = [],
-    ) -> tuple[keras.models.Model, dict, dict]:
+    ) -> tuple[keras.models.Model, pd.DataFrame, dict]:
     """Trains and evaluates a given model on the given datasets.
 
     Args:
@@ -81,7 +81,7 @@ def train_evaluate_model(
         callbacks (list, optional): Additional callbacks during training. Defaults to an empty list.
 
     Returns:
-        tuple[keras.models.Model, dict, dict: Tuple of trained model, history dictionary, and metrics dictionary.
+        tuple[keras.models.Model, pd.DataFrame, dict: Tuple of trained model, history dataframe, and metrics dictionary.
     """
 
     # Ensure checkpoint root directory has been created.
@@ -106,14 +106,6 @@ def train_evaluate_model(
             filename=history_path,
             append=False,
         ),
-        # # Early stopping when performance does not improve across N epochs.
-        # tf.keras.callbacks.EarlyStopping(
-        #     monitor='val_loss',
-        #     mode='auto',
-        #     patience=10,
-        #     # min_delta=0.001,
-        #     restore_best_weights=True,
-        # ),
     ])
 
     # Train the model.
@@ -141,7 +133,7 @@ def train_evaluate_model(
     with open(metrics_path, 'w') as f:
         json.dump(metrics, f)
 
-    return model, history.history, metrics
+    return model, pd.DataFrame(history.history), metrics
 
 
 def ensure_path(s: None|str|Path, default: str|Path = '.') -> Path:
@@ -162,7 +154,7 @@ def train_evaluate_for_dataset(
     epochs: int = 10,
     checkpoint_root: str = None,
     callbacks: list = [],
-    ) -> tuple[keras.Model, dict, dict]:
+    ) -> tuple[keras.Model, pd.DataFrame, dict]:
     """Train and evaluate a model on a given dataset.
 
     If checkpoint exists then the model is loaded in place of training.
