@@ -16,8 +16,8 @@ model:
   name: transformer_time2vec_encoder_pool_fc
   parameters:
     in_seq_len: *ID_in_seq_len
-    in_feat: 5
-    out_feat: 1
+    in_feat: !len [*ID_in_feat]
+    out_feat: !len [*ID_out_feat]
     fc_units: [64,64]
     embed_dim: 64
     n_heads: 8
