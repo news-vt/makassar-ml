@@ -71,14 +71,14 @@ def main(config: dict):
         # Configure optimizer.
         # optim = keras.optimizers.Adam(learning_rate=lr_schedule)
         optim = keras.optimizers.get({
-        'class_name': config['model']['optimizer']['name'],
-            'config': config['model']['optimizer']['params'],
+        'class_name': config['train']['optimizer']['name'],
+            'config': config['train']['optimizer']['params'],
         })
 
         # Compile the model.
         model.compile(
             optimizer=optim,
-            **config['model']['compile'],
+            **config['train']['compile'],
         )
         return model
 
@@ -93,7 +93,7 @@ def main(config: dict):
         model_name=config['model']['name'],
         build_model_func=build_model_func,
         dataset_loader_func=dataset_loader_func,
-        metric_list=config['model']['compile']['metrics'],
+        metric_list=config['train']['compile']['metrics'],
         batch_size=config['train']['batch_size'],
         strategy=strategy,
         epochs=config['train']['epochs'],
@@ -102,7 +102,7 @@ def main(config: dict):
     model.summary(print_fn=logger.info)
 
     # Plot train/val performance.
-    for key in config['model']['compile']['metrics']+['loss']:
+    for key in config['train']['compile']['metrics']+['loss']:
         fig = ml.visualization.plot_metric(hist, key)
         path = Path(config['roots']['image_root'])/f"{config['model']['name']}_metric_{key}.png"
         fig.savefig(path, bbox_inches='tight')
@@ -173,6 +173,9 @@ if __name__ == '__main__':
     if config_path.exists():
         with open(config_path) as f:
             config = yaml.load(f, Loader=ml.yaml.EnvVarLoader)
+
+    # import json
+    # print(json.dumps(config, indent=4))
 
     # Run main training function.
     main(config)

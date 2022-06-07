@@ -12,6 +12,11 @@ model:
     dropout: 0.1
     n_encoders: 3
 
+# Training configuration.
+train:
+  batch_size: 128
+  epochs: 10
+
   # Optimizer.
   optimizer:
     name: adam
@@ -22,11 +27,6 @@ model:
   compile:
     loss: mse
     metrics: ['mae','mape']
-
-# Training configuration.
-train:
-  batch_size: 128
-  epochs: 10
 
 # Dataset.
 dataset:
