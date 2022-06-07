@@ -3,6 +3,7 @@ import ast
 import json
 import logging
 from typing import Callable
+import numpy as np
 import pandas as pd
 from pathlib import Path
 from sklearn.model_selection import ParameterGrid
@@ -27,6 +28,44 @@ def str_eval_wrapper(func):
         # Evaluate function with converted arguments.
         return func(*args, **kwargs)
     return wrap
+
+
+def config2parameterdict(config: dict) -> dict:
+    """Converts configuration dictionary into parameters acceptable for `ParameterGrid`."""
+
+    def parse_node(node: object) -> object:
+        """Helper to parse a configuration node."""
+        # Configuration.
+        if isinstance(node, dict):
+            # Single value.
+            if 'value' in node:
+                return [node['value']]
+            elif 'values' in node:
+                return [node['values']]
+            # Range of values.
+            elif 'range' in node:
+                return list(np.arange(node['range']['min'], node['range']['max'], node['range']['step']))
+        # Single value.
+        else:
+            return [node]
+
+    # Dictionary of parameters.
+    params = dict()
+
+    # Parse model.
+    if 'parameters' in config['model']:
+        for key,val in config['model']['parameters'].items():
+            params[key] = parse_node(val)
+
+    # Parse training optimier.
+    if 'optimizer' in config['train']:
+        if 'parameters' in config['train']['optimizer']:
+            for key,val in config['train']['optimizer']['parameters']:
+                params[key] = parse_node(val)
+
+    return params
+
+
 
 
 def hp_gridsearch(
