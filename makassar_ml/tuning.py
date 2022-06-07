@@ -30,6 +30,25 @@ def str_eval_wrapper(func):
     return wrap
 
 
+def _config2dict(config: dict, parse_node: Callable[[object], object]) -> dict:
+
+    # Dictionary of parameters.
+    params = dict()
+
+    # Parse model.
+    if 'parameters' in config['model']:
+        for key,val in config['model']['parameters'].items():
+            params[key] = parse_node(val)
+
+    # Parse training optimier.
+    if 'optimizer' in config['train']:
+        if 'parameters' in config['train']['optimizer']:
+            for key,val in config['train']['optimizer']['parameters']:
+                params[key] = parse_node(val)
+
+    return params
+
+
 def config2parameterdict(config: dict) -> dict:
     """Converts configuration dictionary into parameters acceptable for `ParameterGrid`."""
 
@@ -50,22 +69,7 @@ def config2parameterdict(config: dict) -> dict:
         else:
             return [node]
 
-    # Dictionary of parameters.
-    params = dict()
-
-    # Parse model.
-    if 'parameters' in config['model']:
-        for key,val in config['model']['parameters'].items():
-            params[key] = parse_node(val)
-
-    # Parse training optimier.
-    if 'optimizer' in config['train']:
-        if 'parameters' in config['train']['optimizer']:
-            for key,val in config['train']['optimizer']['parameters']:
-                params[key] = parse_node(val)
-
-    return params
-
+    return _config2dict(config, parse_node)
 
 
 
