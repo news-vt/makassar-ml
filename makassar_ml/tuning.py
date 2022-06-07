@@ -44,6 +44,7 @@ def _config2dict(config: dict, parse_node: Callable[[object], object]) -> dict:
     # Parse training optimier.
     if 'optimizer' in config['train']:
         if 'parameters' in config['train']['optimizer']:
+            params['optimizer'] = parse_node('optimizer', config['train']['optimizer']['name'])
             for key,val in config['train']['optimizer']['parameters'].items():
                 params[key] = parse_node(key, val)
 
@@ -116,6 +117,7 @@ def config2hyperparameterdict(config: dict) -> dict:
 
 def hp_gridsearch(
     model_name: str,
+    params: dict,
     build_model_func: Callable[[dict], keras.Model], # this function must compile the model too.
     dataset_loader_func: Callable[[int], tuple[tf.data.Dataset, tf.data.Dataset, tf.data.Dataset]],
     metric_list: list[str],
@@ -123,7 +125,7 @@ def hp_gridsearch(
     strategy: tf.distribute.Strategy = tf.distribute.get_strategy(),
     epochs: int = 10,
     tuning_root: str = None,
-    table_root: str = None,
+    # table_root: str = None,
     callbacks: list = [],
 
     # params: dict,
@@ -139,9 +141,9 @@ def hp_gridsearch(
     # shuffle: bool = False,
     # strategy: tf.distribute.Strategy = tf.distribute.get_strategy(),
     # epochs: int = 10,
-    table_header: list = None,
-    sort_cols: str|list[str] = None,
-    sort_ascending: bool = True,
+    # table_header: list = None,
+    # sort_cols: str|list[str] = None,
+    # sort_ascending: bool = True,
     # table_omit_cols: str|list[str] = None,
     ) -> tuple[keras.models.Model, dict, dict, pd.DataFrame]:
     """Train and evaluate a model on a given dataset.
@@ -259,15 +261,15 @@ def hp_gridsearch(
             **p,
         })
 
-    logger.info(f"[{model_name}] Tuning Results:")
+    # logger.info(f"[{model_name}] Tuning Results:")
 
     # Build dataframe using results.
     df = pd.DataFrame(df_results)
-    if table_header is not None:
-        df = df[table_header]
-    if sort_cols is not None:
-        df = df.sort_values(by=sort_cols, ascending=sort_ascending)
-    logger.info(df.to_string(index=False)) # Log to console.
+    # if table_header is not None:
+    #     df = df[table_header]
+    # if sort_cols is not None:
+    #     df = df.sort_values(by=sort_cols, ascending=sort_ascending)
+    # logger.info(df.to_string(index=False)) # Log to console.
     # df.to_csv(TABLE_ROOT/f"{model_name}_tuning_results.csv", sep='|', index=False)
 
     # # Export the dataframe to LaTeX using custom style.
