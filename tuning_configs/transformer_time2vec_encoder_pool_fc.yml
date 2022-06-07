@@ -65,8 +65,9 @@ train:
 
 # Root directory paths.
 roots:
-  checkpoint_root: $HOME/research/makassar/checkpoints
-  image_root: ${HOME}/research/makassar/images
-  table_root: ${HOME}/research/makassar/tables
-  hp_tuning_root: ${HOME}/research/makassar/hp_tuning
-  keras_tuner_path: ${HOME}/research/makassar/keras_tuner
+  project_root: &ID_project_root ${HOME}/research/makassar/
+  checkpoint_root: !join [*ID_project_root, checkpoints]
+  image_root: !join [*ID_project_root, images]
+  table_root: !join [*ID_project_root, tables]
+  hp_tuning_root: !join [*ID_project_root, hp_tuning]
+  keras_tuner_path: !join [*ID_project_root, keras_tuner]
