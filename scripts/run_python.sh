@@ -25,3 +25,4 @@ conda activate ${CONDA_ENV_NAME}
 
 # Propagate arguments to Python and run.
 python $@
+
