@@ -20,6 +20,8 @@ def build_model(
 
     # Input sequence of features.
     inp = keras.Input(shape=(in_seq_len, in_feat))
+    # Create common model input/output variable.
+    x = inp
     # Time embedding.
     x = LinearEmbedding2D(embed_dim=embed_dim)(x)
     x = LinearEncoding2D()(x) # Positional encoding.
