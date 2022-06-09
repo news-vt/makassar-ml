@@ -37,7 +37,7 @@ def build_model(
             dropout=dropout,
         )(x)
     # Downsample to the original sequence dimension.
-    x = keras.layers.GlobalAvgPool1D(data_format='channels_first')(x) # shape=(in_seq_len,)
+    x = keras.layers.GlobalAvgPool1D(data_format='channels_last')(x)
     x = keras.layers.Dropout(rate=dropout)(x)
     # Fully-connected network before classifier.
     for units in fc_units: 
