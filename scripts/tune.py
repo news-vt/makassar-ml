@@ -171,7 +171,7 @@ def main(
     csv_df = df[table_header].sort_values(by='val_loss', ascending=True)
     logger.info(csv_df.to_string(index=False))
     # Log results as CSV to file.
-    csv_df.to_csv(Path(config['roots']['hp_tuning_root'])/f"tuning_results.csv")
+    csv_df.to_csv(Path(config['roots']['hp_tuning_root'])/f"tuning_results.csv", index=False)
 
     ###
     # Plotting.
