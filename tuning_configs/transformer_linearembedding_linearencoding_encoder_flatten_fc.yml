@@ -3,7 +3,7 @@ dataset:
   name: beijingpm25
   parameters:
     path: ${HOME}/research/makassar/datasets/beijing_pm25
-    in_feat: &ID_in_feat ['TEMP','PRES','Iws','Is','Ir']
+    in_feat: &ID_in_feat ['day_of_year','TEMP','PRES','Iws','Is','Ir']
     out_feat: &ID_out_feat ['DEWP']
     in_seq_len: &ID_in_seq_len 24 # Alias for future use.
     out_seq_len: &ID_out_seq_len 1 # Alias for future use.
