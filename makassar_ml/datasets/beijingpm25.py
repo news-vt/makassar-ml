@@ -57,6 +57,9 @@ def load_beijingpm25_df(
     # Create single date column from independent year/month/day columns.
     df['datetime'] = pd.to_datetime(df[['year','month','day','hour']])
 
+    # Add day of year column.
+    df['day_of_year'] = df['datetime'].dt.day_of_year
+
     # Partition dataframe into train/val/test.
     if split is not None:
         train_df, val_df, test_df = partition_dataset_df(df, split=split)
