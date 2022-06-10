@@ -1,0 +1,75 @@
+# Dataset.
+dataset:
+  name: beijingpm25
+  parameters:
+    path: ${HOME}/research/makassar/datasets/beijing_pm25
+    in_feat: &ID_in_feat ['day_of_year','TEMP','PRES','Iws','Is','Ir']
+    out_feat: &ID_out_feat ['DEWP']
+    in_seq_len: &ID_in_seq_len 24 # Alias for future use.
+    out_seq_len: &ID_out_seq_len 1 # Alias for future use.
+    shift: 1
+    split: [0.7,0.2,0.1]
+    shuffle: False
+
+# Model definition.
+model:
+  name: transformer_time2vec_relpos
+  parameters:
+    in_seq_len: *ID_in_seq_len
+    in_feat: !len [*ID_in_feat]
+    out_feat: !len [*ID_out_feat]
+    embed_dim: 
+      values:
+        - 32
+        - 64
+        - 128
+    n_heads: 
+      values:
+        - 8
+        - 12
+    ff_dim:
+      values:
+        - 256
+        - 512
+        - 1024
+    dropout: 
+      values:
+        - 0.1
+        - 0.3
+    n_encoders:
+      values:
+        - 3
+        - 6
+
+# Training configuration.
+train:
+  batch_size: 128
+  epochs: 10
+
+  # Optimizer.
+  optimizer:
+    name: adam
+    parameters:
+      lr: 0.001
+
+  # Compile parameters.
+  compile:
+    loss: mse
+    metrics: ['mae','mape']
+
+  # Training callbacks.
+  callbacks:
+    EarlyStopping:
+      monitor: val_loss
+      mode: auto
+      patience: 3
+      restore_best_weights: True
+
+# Root directory paths.
+roots:
+  project_root: &ID_project_root ${HOME}/research/makassar/
+  checkpoint_root: !join [*ID_project_root, checkpoints]
+  image_root: !join [*ID_project_root, images]
+  table_root: !join [*ID_project_root, tables]
+  hp_tuning_root: !join [*ID_project_root, hp_tuning]
+  keras_tuner_path: !join [*ID_project_root, keras_tuner]
