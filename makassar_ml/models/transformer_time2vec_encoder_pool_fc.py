@@ -20,8 +20,10 @@ def build_model(
 
     # Input sequence of features.
     inp = keras.Input(shape=(in_seq_len, in_feat))
+    # Create common model input/output variable.
+    x = inp
     # Time embedding.
-    x = Time2Vec(embed_dim=embed_dim)(inp)
+    x = Time2Vec(embed_dim=embed_dim)(x)
     # Combine input with embedding to form attention input features.
     x = keras.layers.Concatenate(axis=-1)([inp, x])
     # Set model dimension, since Time2Vec embedding is dynamic.
