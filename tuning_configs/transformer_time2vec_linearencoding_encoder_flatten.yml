@@ -20,31 +20,32 @@ model:
     out_feat: !len [*ID_out_feat]
     embed_dim: 
       values:
+        - 16
         - 32
-        - 64
-        - 128
+        # - 64
+        # - 128
     n_heads: 
       values:
         - 8
-        - 12
+        # - 12
     ff_dim:
       values:
         - 256
         - 512
-        - 1024
+        # - 1024
     dropout: 
       values:
         - 0.1
-        - 0.3
+        # - 0.3
     n_encoders:
       values:
         - 3
-        - 6
+        # - 6
 
 # Training configuration.
 train:
   batch_size: 128
-  epochs: 10
+  epochs: 200
 
   # Optimizer.
   optimizer:
@@ -62,7 +63,7 @@ train:
     EarlyStopping:
       monitor: val_loss
       mode: auto
-      patience: 3
+      patience: 50
       restore_best_weights: True
 
 # Root directory paths.
