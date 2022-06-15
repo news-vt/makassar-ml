@@ -52,6 +52,7 @@ class TransformerEncoderLayer(keras.layers.Layer):
         value_dim: int = None,
         ff_dim: int = 2048,
         dropout: float = 0.0,
+        norm_type: str = 'batch', # 'batch' or 'layer'
         **kwargs,
         ):
         """Transformer encoder layer.
@@ -79,6 +80,8 @@ class TransformerEncoderLayer(keras.layers.Layer):
             self.value_dim = value_dim
         self.ff_dim = ff_dim
         self.dropout = dropout
+        self.norm_type = norm_type
+        assert norm_type in ['batch', 'layer']
 
     def build(self, input_shape: tf.TensorShape):
 
@@ -93,8 +96,10 @@ class TransformerEncoderLayer(keras.layers.Layer):
         self.attn_multi._build_from_signature(input_shape, input_shape, input_shape)
         self.attn_dropout = keras.layers.Dropout(rate=self.dropout)
         self.attn_add = keras.layers.Add()
-        # self.attn_norm = keras.layers.LayerNormalization(epsilon=1e-6)
-        self.attn_norm = keras.layers.BatchNormalization()
+        if self.norm_type == 'batch':
+            self.attn_norm = keras.layers.BatchNormalization()
+        elif self.norm_type == 'layer':
+            self.attn_norm = keras.layers.LayerNormalization(epsilon=1e-6)
 
         # Second sublayer.
         # Point-wise feed forward network with add and norm.
@@ -105,8 +110,10 @@ class TransformerEncoderLayer(keras.layers.Layer):
         )
         self.ff_dropout = keras.layers.Dropout(rate=self.dropout)
         self.ff_add = keras.layers.Add()
-        # self.ff_norm = keras.layers.LayerNormalization(epsilon=1e-6)
-        self.ff_norm = keras.layers.BatchNormalization()
+        if self.norm_type == 'batch':
+            self.ff_norm = keras.layers.BatchNormalization()
+        elif self.norm_type == 'layer':
+            self.ff_norm = keras.layers.LayerNormalization(epsilon=1e-6)
 
     def call(self, 
         x: tf.Tensor,
@@ -150,6 +157,7 @@ class TransformerEncoderLayer(keras.layers.Layer):
             'ff_dim': self.ff_dim,
             'value_dim': self.value_dim,
             'dropout': self.dropout,
+            'norm_type': self.norm_type,
         })
         return config
 
