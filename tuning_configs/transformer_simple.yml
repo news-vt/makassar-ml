@@ -65,6 +65,7 @@ train:
       mode: auto
       patience: 3
       restore_best_weights: True
+    LearningRateAdjuster: {}
 
 # Root directory paths.
 roots:
