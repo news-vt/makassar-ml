@@ -99,7 +99,7 @@ def train_evaluate_model(
             monitor='val_loss',
             mode='min',
             save_best_only=True,
-            verbose=1,
+            # verbose=1,
         ),
         # Log training history to CSV file.
         keras.callbacks.CSVLogger(
