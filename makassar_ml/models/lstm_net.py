@@ -18,7 +18,7 @@ def build_model(
 
     # Build fully-connected layers.
     for units in fc_units:
-        x = keras.layers.Dense(units=units, activation='relu')(x)
+        x = keras.layers.Dense(units=units, activation='linear')(x)
         x = keras.layers.Dropout(rate=dropout)(x)
 
     # Classifier.
