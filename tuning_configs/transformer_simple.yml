@@ -65,7 +65,15 @@ train:
       mode: auto
       patience: 3
       restore_best_weights: True
-    LearningRateAdjuster: {}
+    # LearningRateAdjuster: {}
+    LearningRateScheduler:
+      schedule: lr_scheduler_linear_warmup_linear_decay
+      parameters:
+        warmup_epochs: 15
+        decay_epochs: 100
+        initial_lr: 1.0e-6
+        base_lr: 1.0e-4
+        min_lr: 5.0e-5
 
 # Root directory paths.
 roots:
