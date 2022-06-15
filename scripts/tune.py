@@ -26,6 +26,7 @@ tf.random.set_seed(SEED) # Only this works on ARC (since tensorflow==2.4).
 # Setup logging (useful for ARC systems).
 # logger = logging.getLogger(__name__)
 logger = logging.getLogger()
+logger.propagate = False
 logger.setLevel(logging.DEBUG) # Must be lowest of all handlers listed below.
 while logger.hasHandlers(): logger.removeHandler(logger.handlers[0]) # Clear all existing handlers.
 
