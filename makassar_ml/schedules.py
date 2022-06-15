@@ -53,3 +53,23 @@ def LinearWarmupLearningRateScheduleWrapper(base):
 
     # Return the wrapper.
     return Wrapper
+
+
+def lr_scheduler_linear_warmup_linear_decay(
+    epoch: int, # Current epoch
+    lr: float, # Current learning rate
+    warmup_epochs: int = 15,
+    decay_epochs: int = 100,
+    initial_lr: float = 1e-6,
+    base_lr: float = 1e-3,
+    min_lr: float = 5e-5,
+    ):
+    if epoch <= warmup_epochs:
+        pct = epoch / warmup_epochs
+        return ((base_lr - initial_lr) * pct) + initial_lr
+
+    if epoch > warmup_epochs and epoch < warmup_epochs+decay_epochs:
+        pct = 1 - ((epoch - warmup_epochs) / decay_epochs)
+        return ((base_lr - min_lr) * pct) + min_lr
+
+    return min_lr
