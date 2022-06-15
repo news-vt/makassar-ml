@@ -140,7 +140,10 @@ def main(
     callbacks = []
     if 'callbacks' in config['train']:
         for key, cb_params in config['train']['callbacks'].items():
-            callbacks.append(getattr(keras.callbacks, key)(**cb_params))
+            if hasattr(ml.callbacks, key):
+                callbacks.append(getattr(ml.callbacks, key)(**cb_params))
+            elif hasattr(keras.callbacks, key):
+                callbacks.append(getattr(keras.callbacks, key)(**cb_params))
 
     # Convert config into parameter dictionary.
     parameterdict = ml.tuning.config2parameterdict(config)
