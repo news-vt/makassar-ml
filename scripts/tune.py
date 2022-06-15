@@ -1,4 +1,5 @@
 from __future__ import annotations
+from functools import partial
 
 # Add parent directory to path.
 from pathlib import Path
@@ -143,7 +144,19 @@ def main(
             if hasattr(ml.callbacks, key):
                 callbacks.append(getattr(ml.callbacks, key)(**cb_params))
             elif hasattr(keras.callbacks, key):
-                callbacks.append(getattr(keras.callbacks, key)(**cb_params))
+                if key == 'LearningRateScheduler':
+                    callbacks.append(
+                        keras.callbacks.LearningRateScheduler(
+                            partial(
+                                getattr(ml.schedules, cb_params['schedule']),
+                                **cb_params.get('parameters', {})
+                            )
+                        )
+                    )
+                else:
+                    callbacks.append(
+                        getattr(keras.callbacks, key)(**cb_params)
+                    )
 
     # Convert config into parameter dictionary.
     parameterdict = ml.tuning.config2parameterdict(config)
