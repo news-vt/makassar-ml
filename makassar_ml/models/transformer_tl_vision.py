@@ -5,6 +5,9 @@ from ..layers import (
     TransformerEncoderLayer,
 )
 
+# Vision Transformer guide.
+# https://keras.io/examples/vision/image_classification_with_vision_transformer/
+
 def build_model(
     image_shape: tuple,
     image_backbone_name: str, # Must be within `keras.applications`
@@ -32,8 +35,10 @@ def build_model(
 
     # Image input branch.
     inp_image = keras.Input(shape=image_shape)
+    # Set output variable to current input.
+    x_image = inp_image
     # Preprocess image input.
-    x_image = getattr(keras.applications, image_backbone_name.lower()).preprocess_input(inp_image)
+    x_image = getattr(keras.applications, image_backbone_name.lower()).preprocess_input(x_image)
     # Run preprocessed image through backbone image feature extraction network.
     x_image = image_backbone_net(x_image, training=False)
     # Project backbone output into dimension necessary for encoder layer.
