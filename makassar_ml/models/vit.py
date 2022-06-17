@@ -77,11 +77,11 @@ def ViT(
     image_shape: tuple,
     patch_size: int,
     num_patches: int,
-    image_encoder_dim: int,
+    embed_dim: int,
     n_class: int = None,
-    n_image_encoders: int = 3,
-    n_image_heads: int = 8,
-    image_ff_dim: int = 2048,
+    n_encoders: int = 3,
+    n_heads: int = 8,
+    ff_dim: int = 2048,
     dropout: float = 0.0,
     fc_units: list[int] = [],
     include_top: bool = True,
@@ -103,16 +103,16 @@ def ViT(
     # Encode patches.
     x = PatchEncoder(
         num_patches=num_patches,
-        projection_dim=image_encoder_dim,
+        projection_dim=embed_dim,
     )(x)
 
     # Pass image feature maps through encoders.
-    for _ in range(n_image_encoders):
+    for _ in range(n_encoders):
         x = TransformerEncoderLayer(
-            model_dim=image_encoder_dim,
+            model_dim=embed_dim,
             key_dim=None,
-            n_heads=n_image_heads,
-            ff_dim=image_ff_dim,
+            n_heads=n_heads,
+            ff_dim=ff_dim,
             value_dim=None,
             dropout=dropout,
             norm_type='layer',
@@ -121,7 +121,7 @@ def ViT(
     # Include classifier on top of the Transfomer Encoders.
     if include_top:
 
-        # Flatten to (batch,num_feature_maps*image_encoder_dim)
+        # Flatten to (batch,num_feature_maps*embed_dim)
         x = keras.layers.Flatten(data_format='channels_last')(x)
 
         # Add intermediate dense layers with ReLU activation.
