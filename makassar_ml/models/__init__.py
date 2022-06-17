@@ -7,4 +7,5 @@ from . import (
     transformer_simple,
     transformer_tl_vision,
     vit,
+    fot,
 )
