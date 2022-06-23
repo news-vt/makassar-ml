@@ -1,4 +1,5 @@
 from __future__ import annotations
+from multiprocessing.sharedctypes import Value
 import numpy as np
 import pandas as pd
 import tensorflow as tf
@@ -29,6 +30,33 @@ def partition_dataset_df(
     df_val = df[int(n*train_split):int(n*(1-test_split))].copy()
     df_test = df[int(n*(1-test_split)):].copy()
     return df_train, df_val, df_test
+
+
+def partition_dataset_ds(
+    ds: tf.data.Dataset,
+    ds_size: int = None, # Required if no cardinality available.
+    split: tuple[float, float, float] = (0.8, 0.1, 0.1),
+    ) -> tuple[tf.data.Dataset, tf.data.Dataset, tf.data.Dataset]:
+    assert isinstance(split, (list, tuple))
+    assert len(split) == 3
+    assert np.isclose(sum(split), 1.0)
+
+    # Infer size from dataset cardinality.
+    if ds_size is None:
+        ds_size = tf.data.experimental.cardinality(ds)
+        assert ds_size not in [tf.data.experimental.INFINITE_CARDINALITY, tf.data.experimental.UNKNOWN_CARDINALITY]
+        ds_size = ds_size.numpy()
+
+    # Compute sizes of each subset.
+    train_split, val_split, test_split = split # Unpack split tuple.
+    train_size = int(train_split * ds_size)
+    val_size = int(val_split * ds_size)
+
+    # Build subsets by skipping and taking a certain number of elements.
+    ds_train = ds.take(train_size)
+    ds_val = ds.skip(train_size).take(val_size)
+    ds_test = ds.skip(train_size).skip(val_size)
+    return ds_train, ds_val, ds_test
 
 
 
