@@ -8,4 +8,5 @@ from . import (
     transformer_tl_vision,
     vit,
     fot,
+    fut,
 )
