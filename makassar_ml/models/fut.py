@@ -7,8 +7,7 @@ from ..layers import (
 
 
 def FuT(
-    inputs: list[tf.Tensor],
-    input_heads: list[keras.layers.Layer],
+    inputs: list[keras.Model|tf.Tensor],
     task_head: keras.layers.Layer,
     n_heads: int = 8,
     key_dim: int = None,
@@ -23,12 +22,18 @@ def FuT(
     """
 
     # Create branch for each input sequence.
-    outputs = []
-    for i, (inp, inp_head) in enumerate(zip(inputs, input_heads)):
+    io_inputs = []
+    io_outputs = []
+    for i, inp in enumerate(inputs):
         layers = []
 
-        # Pass input through head.
-        x = inp_head(inp)
+        # Preserve original input tensor.
+        if isinstance(inp, keras.Model):
+            io_inputs.append(inp.input)
+            x = inp.output
+        else:
+            io_inputs.append(inp)
+            x = inp
 
         # Preserve input dimension.
         model_dim = x.shape[-1]
@@ -52,10 +57,10 @@ def FuT(
 
         # Save outputs.
         x = branch(x)
-        outputs.append(x)
+        io_outputs.append(x)
 
     # Pass branch outputs to final task head.
-    o = task_head(outputs)
+    o = task_head(io_outputs)
 
     # Construct model class and return.
-    return keras.Model(inputs=inputs, outputs=o)
+    return keras.Model(inputs=io_inputs, outputs=o)
