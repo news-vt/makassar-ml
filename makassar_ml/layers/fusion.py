@@ -1,5 +1,6 @@
 from __future__ import annotations
 import tensorflow.keras as keras
+from tensorflow import Tensor
 from ..layers import (
     Patches,
     PatchEncoder,
@@ -7,76 +8,45 @@ from ..layers import (
 )
 
 
-class ImageInputHead(keras.layers.Layer):
-    def __init__(self,
-        patch_size: int,
-        num_patches: int,
-        embed_dim: int,
-        **kwargs,
-        ):
-        """Image Input head.
-        """
-        super().__init__(**kwargs)
-        self.patch_size = patch_size
-        self.num_patches = num_patches
-        self.embed_dim = embed_dim
+def ImageInputHead(
+    shape: tuple,
+    patch_size: int,
+    num_patches: int,
+    embed_dim: int,
+    ) -> keras.Model:
+    """Image input head."""
+    # Create input tensor.
+    inp = keras.layers.Input(shape=shape)
+    x = inp
 
-        self.patch_extractor = Patches(
-            patch_size=patch_size,
-        )
-        self.patch_encoder = PatchEncoder(
-            num_patches=num_patches,
-            projection_dim=embed_dim,
-        )
-    
-    def get_config(self) -> dict:
-        """Retreive custom layer configuration for future loading.
+    # Create patches.
+    x = Patches(
+        patch_size=patch_size,
+    )(x)
 
-        Returns:
-            dict: Configuration dictionary.
-        """
-        config = super().get_config().copy()
-        config.update({
-            'patch_size': self.patch_size,
-            'num_patches': self.num_patches,
-            'embed_dim': self.embed_dim,
-        })
-        return config
-
-    def call(self, x):
-        x = self.patch_extractor(x)
-        x = self.patch_encoder(x)
-        return x
+    # Encode patches.
+    x = PatchEncoder(
+        num_patches=num_patches,
+        projection_dim=embed_dim,
+    )(x)
+    return keras.Model(inputs=inp, outputs=x)
 
 
-class TimeSeriesInputHead(keras.layers.Layer):
-    def __init__(self,
-        embed_dim: int,
-        **kwargs,
-        ):
-        """Image Input head.
-        """
-        super().__init__(**kwargs)
-        self.embed_dim = embed_dim
+def TimeSeriesInputHead(
+    shape: tuple,
+    embed_dim: int,
+    ) -> keras.Model:
+    """Time-Series input head."""
+    # Create input tensor.
+    inp = keras.layers.Input(shape=shape)
+    x = inp
 
-        self.t2v = Time2Vec(embed_dim=self.embed_dim)
+    # Time-vector embedding.
+    x = Time2Vec(embed_dim=embed_dim)(x)
 
-    def get_config(self) -> dict:
-        """Retreive custom layer configuration for future loading.
-
-        Returns:
-            dict: Configuration dictionary.
-        """
-        config = super().get_config().copy()
-        config.update({
-            'embed_dim': self.embed_dim,
-        })
-        return config
-
-    def call(self, inp):
-        x = self.t2v(inp)
-        x = keras.layers.Concatenate(axis=-1)([inp, x])
-        return x
+    # Combine input with embedding to form input features.
+    x = keras.layers.Concatenate(axis=-1)([inp, x])
+    return keras.Model(inputs=inp, outputs=x)
 
 
 
