@@ -3,6 +3,9 @@ import tensorflow as tf
 import tensorflow.keras as keras
 from ..layers import (
     TransformerEncoderLayer,
+    ImageInputHead,
+    TimeSeriesInputHead,
+    ClassificationTaskHead,
 )
 
 
@@ -64,3 +67,59 @@ def FuT(
 
     # Construct model class and return.
     return keras.Model(inputs=io_inputs, outputs=o)
+
+
+
+def FuT_image_ts_classifier(
+    image_shape: tuple,
+    seq_shape: tuple,
+    patch_size: int,
+    image_embed_dim: int,
+    seq_embed_dim: int,
+    n_class: int,
+    num_patches: int = None,
+    n_heads: int = 8,
+    key_dim: int = None,
+    value_dim: int = None,
+    ff_dim: int = 2048,
+    dropout: float = 0.0,
+    n_encoders: int = 3,
+    ) -> keras.Model:
+    """Vision Forecast Transformer for classification tasks."""
+    
+    if num_patches is None:
+        num_patches = (image_shape[0]//patch_size)**2
+
+    # Input heads.
+    inputs = [
+        ImageInputHead(
+            shape=image_shape,
+            patch_size=patch_size,
+            num_patches=num_patches,
+            embed_dim=image_embed_dim,
+        ),
+        TimeSeriesInputHead(
+            shape=seq_shape,
+            embed_dim=seq_embed_dim,
+        ),
+    ]
+
+    # Task head.
+    task_head = ClassificationTaskHead(
+        n_class=n_class,
+        dropout=dropout,
+        name='classifier',
+    )
+
+    # Create fusion model.
+    model = FuT(
+        inputs=inputs,
+        task_head=task_head,
+        n_heads=n_heads,
+        key_dim=key_dim,
+        value_dim=value_dim,
+        ff_dim=ff_dim,
+        dropout=dropout,
+        n_encoders=n_encoders,
+    )
+    return model
