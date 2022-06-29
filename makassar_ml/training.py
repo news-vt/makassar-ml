@@ -97,7 +97,7 @@ def train_evaluate_model(
         keras.callbacks.ModelCheckpoint(
             filepath=checkpoint_path,
             monitor='val_loss',
-            mode='min',
+            mode='auto',
             save_best_only=True,
             # verbose=1,
         ),
