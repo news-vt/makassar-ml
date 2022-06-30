@@ -13,7 +13,6 @@ model:
     image_shape: *ID_image_shape
     n_class: 38
     patch_size: 6
-    num_patches: 144
     embed_dim: 
       values:
         - 16

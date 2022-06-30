@@ -11,7 +11,6 @@ from ..layers import (
 def ViT(
     image_shape: tuple,
     patch_size: int,
-    num_patches: int,
     embed_dim: int,
     n_class: int = None,
     n_encoders: int = 3,
@@ -36,6 +35,7 @@ def ViT(
     x = Patches(patch_size)(inp_image)
 
     # Encode patches.
+    num_patches = (image_shape[0]//patch_size)**2
     x = PatchEncoder(
         num_patches=num_patches,
         projection_dim=embed_dim,
