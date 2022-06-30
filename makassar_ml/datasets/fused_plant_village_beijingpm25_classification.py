@@ -56,6 +56,7 @@ def load_data(
     shuffle_files: bool,
     batch_size: int,
     with_info: bool = False,
+    norm: bool = True,
     ) -> tuple[tf.data.Dataset,tf.data.Dataset,tf.data.Dataset]:
 
     assert len(split) == 3
@@ -75,6 +76,12 @@ def load_data(
     df_timeseries = load_beijingpm25_df(
         path=timeseries_path,
     )
+
+    # Normalize the time-series data.
+    if norm:
+        mean = df_timeseries[timeseries_features].mean()
+        std = df_timeseries[timeseries_features].std()
+        df_timeseries[timeseries_features] = (df_timeseries[timeseries_features] - mean)/std
 
     # Fuse weather data for each split.
     ds_fused_out = []
