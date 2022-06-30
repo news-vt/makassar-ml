@@ -119,7 +119,10 @@ def main(
         })
 
         # Get build function for specific model.
-        build_model = getattr(ml.models, config['model']['name']).build_model
+        build_model = getattr(
+            ml.models,
+            config['model']['name'],
+        )
         model = build_model(
             **model_params,
         )
@@ -132,10 +135,14 @@ def main(
         return model
 
     def dataset_loader_func(batch_size: int) -> tuple[tf.data.Dataset, tf.data.Dataset, tf.data.Dataset]:
-        return ml.datasets.beijingpm25.load_beijingpm25_ds(
-            **config['dataset']['parameters'],
-            batch_size=batch_size,
-        )
+
+        # Load dataset from package.
+        if hasattr(ml.datasets, config['dataset']['name']):
+            func = getattr(ml.datasets, config['dataset']['name']).load_data
+            return func(
+                **config['dataset']['parameters'],
+                batch_size=batch_size,
+            )
 
     # Create callback list if any were specified.
     callbacks = []
@@ -206,59 +213,59 @@ def main(
             logger.info(f"{path}")
             # fig.show()
 
-        # Load the data in dataframe form.
-        df_train, df_val, df_test = ml.datasets.beijingpm25.load_beijingpm25_df(
-            split=config['dataset']['parameters']['split'],
-            path=config['dataset']['parameters']['path'],
-        )
-        # Load the data in dataset form.
-        dataset_train, dataset_val, dataset_test = dataset_loader_func(config['train']['batch_size'])
-        # Data keys.
-        keys = [
-            'year',
-            'month',
-            'day',
-            'hour',
-            'pm2.5',
-            'DEWP',
-            'TEMP',
-            'PRES',
-            'Iws',
-            'Is',
-            'Ir',
-        ]
-        # Normalize specific keys.
-        train_mean = df_train[keys].mean()
-        train_std = df_train[keys].std()
-        df_train[keys] = (df_train[keys] - train_mean)/train_std
-        df_val[keys] = (df_val[keys] - train_mean)/train_std
-        df_test[keys] = (df_test[keys] - train_mean)/train_std
-        # Evaluate the model on the train/val/test data.
-        train_pred = model.predict(dataset_train)
-        val_pred = model.predict(dataset_val)
-        test_pred = model.predict(dataset_test)
-        # Plot the model predictions of the dataset.
-        # Create figure for each data set.
-        figs = {}
-        labels = ['train', 'val', 'test']
-        for l, label in enumerate(labels):
-            fig = ml.visualization.plot_input_output(
-                df=locals()[f"df_{label}"],
-                pred=locals()[f"{label}_pred"],
-                in_seq_len=config['dataset']['parameters']['in_seq_len'],
-                out_seq_len=config['dataset']['parameters']['out_seq_len'],
-                shift=config['dataset']['parameters']['shift'],
-                in_feat=config['dataset']['parameters']['in_feat'],
-                out_feat=config['dataset']['parameters']['out_feat'],
-                x_key='datetime',
-            )
-            # fig.suptitle(f"{label[0].upper()}{label[1:]} Data", fontsize='xx-large')
-            figs[label] = fig
-        for name, fig in figs.items():
-            path = Path(config['roots']['image_root'])/f"tuned_{config['model']['name']}_io_{name}.png"
-            fig.savefig(path, bbox_inches='tight')
-            logger.info(f"{path}")
-            # fig.show()
+        # # Load the data in dataframe form.
+        # df_train, df_val, df_test = ml.datasets.beijingpm25.load_beijingpm25_df(
+        #     split=config['dataset']['parameters']['split'],
+        #     path=config['dataset']['parameters']['path'],
+        # )
+        # # Load the data in dataset form.
+        # dataset_train, dataset_val, dataset_test = dataset_loader_func(config['train']['batch_size'])
+        # # Data keys.
+        # keys = [
+        #     'year',
+        #     'month',
+        #     'day',
+        #     'hour',
+        #     'pm2.5',
+        #     'DEWP',
+        #     'TEMP',
+        #     'PRES',
+        #     'Iws',
+        #     'Is',
+        #     'Ir',
+        # ]
+        # # Normalize specific keys.
+        # train_mean = df_train[keys].mean()
+        # train_std = df_train[keys].std()
+        # df_train[keys] = (df_train[keys] - train_mean)/train_std
+        # df_val[keys] = (df_val[keys] - train_mean)/train_std
+        # df_test[keys] = (df_test[keys] - train_mean)/train_std
+        # # Evaluate the model on the train/val/test data.
+        # train_pred = model.predict(dataset_train)
+        # val_pred = model.predict(dataset_val)
+        # test_pred = model.predict(dataset_test)
+        # # Plot the model predictions of the dataset.
+        # # Create figure for each data set.
+        # figs = {}
+        # labels = ['train', 'val', 'test']
+        # for l, label in enumerate(labels):
+        #     fig = ml.visualization.plot_input_output(
+        #         df=locals()[f"df_{label}"],
+        #         pred=locals()[f"{label}_pred"],
+        #         in_seq_len=config['dataset']['parameters']['in_seq_len'],
+        #         out_seq_len=config['dataset']['parameters']['out_seq_len'],
+        #         shift=config['dataset']['parameters']['shift'],
+        #         in_feat=config['dataset']['parameters']['in_feat'],
+        #         out_feat=config['dataset']['parameters']['out_feat'],
+        #         x_key='datetime',
+        #     )
+        #     # fig.suptitle(f"{label[0].upper()}{label[1:]} Data", fontsize='xx-large')
+        #     figs[label] = fig
+        # for name, fig in figs.items():
+        #     path = Path(config['roots']['image_root'])/f"tuned_{config['model']['name']}_io_{name}.png"
+        #     fig.savefig(path, bbox_inches='tight')
+        #     logger.info(f"{path}")
+        #     # fig.show()
 
 
 if __name__ == '__main__':
