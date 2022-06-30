@@ -82,6 +82,7 @@ def FuT_image_timeseries_classifier(
     key_dim: int = None,
     value_dim: int = None,
     ff_dim: int = 2048,
+    fc_units: list[int] = [],
     dropout: float = 0.0,
     n_encoders: int = 3,
     ) -> keras.Model:
@@ -108,6 +109,7 @@ def FuT_image_timeseries_classifier(
     task_head = ClassificationTaskHead(
         n_class=n_class,
         dropout=dropout,
+        fc_units=fc_units,
         name='classifier',
     )
 
