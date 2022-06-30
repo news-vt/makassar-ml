@@ -18,17 +18,17 @@ def image_augmentation(image: tf.Tensor, size: tuple[int,int] = None):
 
 def load_data(
     image_shape: tuple[int,int,int],
+    split: list[str, str, str],
+    shuffle_files: bool,
     batch_size: int,
-    *args,
-    **kwargs,
     ):
+    assert len(split) == 3
+    assert all(isinstance(item, str) for item in split)
 
     ds_train, ds_val, ds_test = tfds.load(
         name='plant_village',
-        *args,
-        **kwargs,
-        # split=['train[0%:70%]', 'train[70%:90%]', 'train[90%:]'],
-        # shuffle_files=True,
+        split=split,
+        shuffle_files=shuffle_files,
         as_supervised=True,
         with_info=False,
     )
