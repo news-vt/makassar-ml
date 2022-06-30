@@ -55,6 +55,7 @@ def load_data(
     split: list[str, str, str],
     shuffle_files: bool,
     batch_size: int,
+    with_info: bool = False,
     ) -> tuple[tf.data.Dataset,tf.data.Dataset,tf.data.Dataset]:
 
     assert len(split) == 3
@@ -62,12 +63,12 @@ def load_data(
 
     # Load image dataset.
     # ds_images_train, ds_images_val, ds_images_test = tfds.load(
-    ds_images_tuple = tfds.load(
+    ds_images_tuple, info = tfds.load(
         name='plant_village',
         split=split,
         shuffle_files=shuffle_files,
         as_supervised=True,
-        with_info=False,
+        with_info=True,
     )
 
     # Load weather dataset.
@@ -117,4 +118,9 @@ def load_data(
         # Append to output list.
         ds_fused_out.append(ds_fused)
 
-    return tuple(ds_fused_out)
+    # Return with info.
+    if with_info:
+        return tuple(ds_fused_out), info
+    # Return without info.
+    else:
+        return tuple(ds_fused_out)
