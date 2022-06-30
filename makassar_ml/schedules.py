@@ -72,8 +72,7 @@ class LearningRateDecay:
         raise NotImplementedError
 
     def plot(self, epochs: list[float]):
-        epochs = np.array(epochs)
-        lrs = self(epochs)
+        lrs = [self(e) for e in epochs]
         plt.plot(epochs, lrs)
         plt.xlabel('Epoch')
         plt.ylabel('Learning Rate')
@@ -85,12 +84,12 @@ class CosineDecay(LearningRateDecay):
     Implementation inspired by https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/schedules/CosineDecay.
     """
     def __init__(self, 
-        init_lr: float,
+        initial_learning_rate: float,
         decay_epochs: int,
         alpha: float = 0.0,
         ):
         super().__init__()
-        self.init_lr = init_lr
+        self.initial_learning_rate = initial_learning_rate
         self.decay_epochs = decay_epochs
         self.alpha = alpha
 
@@ -98,7 +97,7 @@ class CosineDecay(LearningRateDecay):
         epoch = min(epoch, self.decay_epochs)
         cosine_decay = 0.5 * (1 + tf.cos(np.pi * epoch / self.decay_epochs))
         decayed = (1 - self.alpha) * cosine_decay + self.alpha
-        return self.init_lr * decayed
+        return self.initial_learning_rate * decayed
 
 
 class LinearWarmupLinearDecay(LearningRateDecay):
