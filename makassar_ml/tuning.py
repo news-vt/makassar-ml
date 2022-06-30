@@ -68,6 +68,9 @@ def config2parameterdict(config: dict) -> dict:
             # Range of values.
             elif 'range' in node:
                 return list(np.arange(node['range']['min'], node['range']['max'], node['range']['step']))
+            # Process dictionary as separate keys as separate unique entries.
+            else:
+                return [{k:v} for k,v in node.items()]
         # Single value.
         else:
             return [node]
