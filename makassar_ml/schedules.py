@@ -55,6 +55,13 @@ def LinearWarmupLearningRateScheduleWrapper(base):
     return Wrapper
 
 
+def LinearWarmupCosineDecay(*args, **kwargs):
+    """Cosine Decay with linear warmup."""
+    return LinearWarmupLearningRateScheduleWrapper(
+        keras.experimental.CosineDecay
+        )(*args, **kwargs)
+
+
 def lr_scheduler_linear_warmup_linear_decay(
     epoch: int, # Current epoch
     lr: float, # Current learning rate
