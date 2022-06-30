@@ -3,74 +3,9 @@ import tensorflow as tf
 import tensorflow.keras as keras
 from ..layers import (
     TransformerEncoderLayer,
+    Patches,
+    PatchEncoder,
 )
-
-
-class Patches(keras.layers.Layer):
-    def __init__(self, patch_size):
-        super().__init__()
-        self.patch_size = patch_size
-
-    def call(self, images: tf.Tensor):
-        # Get patches from the original image.
-        patches = tf.image.extract_patches(
-            images=images,
-            sizes=[1, self.patch_size, self.patch_size, 1],
-            strides=[1, self.patch_size, self.patch_size, 1],
-            rates=[1, 1, 1, 1],
-            padding="VALID",
-        )
-        # Reshape while preserving batch dimension.
-        patches = keras.layers.Reshape(
-            target_shape=(-1,patches.shape[-1])
-        )(patches)
-        return patches
-
-    def get_config(self) -> dict:
-        """Retreive custom layer configuration for future loading.
-
-        Returns:
-            dict: Configuration dictionary.
-        """
-        config = super().get_config().copy()
-        config.update({
-            'patch_size': self.patch_size,
-        })
-        return config
-
-
-class PatchEncoder(keras.layers.Layer):
-    def __init__(self, num_patches: int, projection_dim: int):
-        super().__init__()
-        self.num_patches = num_patches
-        self.projection_dim = projection_dim
-
-        # Create layers.
-        self.projection = keras.layers.Dense(units=projection_dim)
-        self.position_embedding = keras.layers.Embedding(
-            input_dim=num_patches,
-            output_dim=projection_dim,
-        )
-
-        # Pre-create position embedding projection since it doesn't depend on the input.
-        self.positions = tf.range(start=0, limit=self.num_patches, delta=1)
-
-    def call(self, patch):
-        encoded = self.projection(patch) + self.position_embedding(self.positions)
-        return encoded
-
-    def get_config(self) -> dict:
-        """Retreive custom layer configuration for future loading.
-
-        Returns:
-            dict: Configuration dictionary.
-        """
-        config = super().get_config().copy()
-        config.update({
-            'num_patches': self.num_patches,
-            'projection_dim': self.projection_dim,
-        })
-        return config
 
 
 def ViT(
