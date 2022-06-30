@@ -49,9 +49,13 @@ train:
     parameters:
       # lr: 1.0e-4
       lr:
-        CosineDecay:
+        # CosineDecay:
+        #   initial_learning_rate: 1.0e-3
+        #   decay_steps: 500
+        #   alpha: 0.0
+        CosineDecayRestarts:
           initial_learning_rate: 1.0e-3
-          decay_steps: 500
+          first_decay_steps: 1000
           alpha: 0.0
 
 
