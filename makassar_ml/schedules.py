@@ -87,17 +87,22 @@ class CosineDecay(LearningRateDecay):
         initial_learning_rate: float,
         decay_epochs: int,
         alpha: float = 0.0,
+        min_learning_rate: float = None
         ):
         super().__init__()
         self.initial_learning_rate = initial_learning_rate
         self.decay_epochs = decay_epochs
         self.alpha = alpha
+        self.min_learning_rate = min_learning_rate
 
     def __call__(self, epoch: int):
         epoch = min(epoch, self.decay_epochs)
         cosine_decay = 0.5 * (1 + tf.cos(np.pi * epoch / self.decay_epochs))
         decayed = (1 - self.alpha) * cosine_decay + self.alpha
-        return self.initial_learning_rate * decayed
+        if self.min_learning_rate is None:
+            return self.initial_learning_rate * decayed
+        else:
+            return max(self.min_learning_rate, self.initial_learning_rate * decayed)
 
 
 class LinearWarmupLinearDecay(LearningRateDecay):
