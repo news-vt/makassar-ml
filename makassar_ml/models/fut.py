@@ -70,7 +70,7 @@ def FuT(
 
 
 
-def FuT_image_ts_classifier(
+def FuT_image_timeseries_classifier(
     image_shape: tuple,
     seq_shape: tuple,
     patch_size: int,

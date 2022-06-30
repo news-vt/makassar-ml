@@ -14,5 +14,5 @@ from .vit import ViT
 from .fot import FoT
 from .fut import (
     FuT,
-    FuT_image_ts_classifier,
+    FuT_image_timeseries_classifier,
 )
