@@ -47,11 +47,11 @@ train:
   optimizer:
     name: adam
     parameters:
-      # lr: 0.0001
+      # lr: 1.0e-4
       lr:
         CosineDecay:
-          initial_learning_rate: 1.0e-5
-          decay_steps: 200
+          initial_learning_rate: 1.0e-3
+          decay_steps: 500
           alpha: 0.0
 
 
