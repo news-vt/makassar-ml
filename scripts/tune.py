@@ -111,7 +111,16 @@ def main(
         # Configure optimizer.
         optimizer_config = dict()
         if 'lr' in model_params:
-            optimizer_config['lr'] = model_params.pop('lr')
+            if isinstance(model_params['lr'], (int, float)):
+                optimizer_config['lr'] = model_params.pop('lr')
+            elif isinstance(model_params['lr'], dict):
+                decayfunc_name = list(model_params['lr'].keys())[0]
+                decayfunc_params = model_params['lr'][decayfunc_name]
+                if hasattr(keras.experimental, decayfunc_name):
+                    optimizer_config['lr'] = getattr(keras.experimental, decayfunc_name)(**decayfunc_params)
+                elif hasattr(keras.optimizers.schedules, decayfunc_name):
+                    optimizer_config['lr'] = getattr(keras.optimizers.schedules, decayfunc_name)(**decayfunc_params)
+                del model_params['lr'] # Remove.
         optimizer_class_name = model_params.pop('optimizer')
         optim = keras.optimizers.get({
         'class_name': optimizer_class_name,
