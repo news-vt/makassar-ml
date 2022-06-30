@@ -1,0 +1,75 @@
+# Dataset.
+dataset:
+  name: fused_plant_village_beijingpm25_classification
+  parameters:
+    timeseries_path: ${HOME}/research/makassar/datasets/beijing_pm25
+    timeseries_datetime_column: 'datetime'
+    timeseries_features: &ID_timeseries_features ['day_of_year','DEWP','TEMP','PRES','Iws','Is','Ir']
+    timeseries_timedelta_dict: 
+      hours: 72
+    timeseries_reserve_offset_index: &ID_seq_len 73 # 1 + length of timedelta
+    image_shape: &ID_image_shape [72,72,3]
+    split: ['train[0%:70%]', 'train[70%:90%]', 'train[90%:]']
+    shuffle_files: False
+
+# Model definition.
+model:
+  name: FuT_image_timeseries_classifier
+  parameters:
+    image_shape: *ID_image_shape
+    seq_shape: [*ID_seq_len, !len [*ID_timeseries_features]] # (seq,feat)
+    n_class: 38
+    patch_size: 6
+    image_embed_dim: 
+      values:
+        - 16
+        - 32
+    seq_embed_dim:
+      values:
+        - 16
+        - 32
+    n_heads: 
+      values:
+        - 8
+    ff_dim:
+      values:
+        - 256
+        - 512
+    dropout: 
+      values:
+        - 0.1
+        - 0.3
+    n_encoders:
+      values:
+        - 3
+        - 6
+    fc_units:
+      values:
+        - []
+        - [256, 256]
+        - [512, 512]
+
+# Training configuration.
+train:
+  batch_size: 128
+  epochs: 30
+
+  # Optimizer.
+  optimizer:
+    name: adam
+    parameters:
+      lr: 1.0e-4
+
+  # Compile parameters.
+  compile:
+    loss: sparse_categorical_crossentropy
+    metrics: ['accuracy']
+
+# Root directory paths.
+roots:
+  project_root: &ID_project_root ${HOME}/research/makassar/
+  checkpoint_root: !join [*ID_project_root, checkpoints]
+  image_root: !join [*ID_project_root, images]
+  table_root: !join [*ID_project_root, tables]
+  hp_tuning_root: !join [*ID_project_root, hp_tuning]
+  keras_tuner_path: !join [*ID_project_root, keras_tuner]
