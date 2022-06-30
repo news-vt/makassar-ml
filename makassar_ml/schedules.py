@@ -1,7 +1,10 @@
 from __future__ import annotations
 import tensorflow as tf
 import tensorflow.keras as keras
+import numpy as np
 from typing import Callable
+import matplotlib.pyplot as plt
+
 
 def LinearWarmupLearningRateScheduleWrapper(base):
     """Learning rate schedule wrapper with linear warmup.
@@ -60,6 +63,68 @@ def LinearWarmupCosineDecay(*args, **kwargs):
     return LinearWarmupLearningRateScheduleWrapper(
         keras.experimental.CosineDecay
         )(*args, **kwargs)
+
+
+
+
+class LearningRateDecay:
+    def __call__(self, epoch: int):
+        raise NotImplementedError
+
+    def plot(self, epochs: list[float]):
+        epochs = np.array(epochs)
+        lrs = self(epochs)
+        plt.plot(epochs, lrs)
+        plt.xlabel('Epoch')
+        plt.ylabel('Learning Rate')
+
+
+class CosineDecay(LearningRateDecay):
+    """Cosine decay over epochs.
+
+    Implementation inspired by https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/schedules/CosineDecay.
+    """
+    def __init__(self, 
+        init_lr: float,
+        decay_epochs: int,
+        alpha: float = 0.0,
+        ):
+        super().__init__()
+        self.init_lr = init_lr
+        self.decay_epochs = decay_epochs
+        self.alpha = alpha
+
+    def __call__(self, epoch: int):
+        epoch = min(epoch, self.decay_epochs)
+        cosine_decay = 0.5 * (1 + tf.cos(np.pi * epoch / self.decay_epochs))
+        decayed = (1 - self.alpha) * cosine_decay + self.alpha
+        return self.init_lr * decayed
+
+
+class LinearWarmupLinearDecay(LearningRateDecay):
+    def __init__(self,
+        warmup_epochs: int,
+        decay_epochs: int,
+        initial_lr: float,
+        base_lr: float,
+        min_lr: float,
+        ):
+        self.warmup_epochs = warmup_epochs
+        self.decay_epochs = decay_epochs
+        self.initial_lr = initial_lr
+        self.base_lr = base_lr
+        self.min_lr = min_lr
+
+    def __call__(self, epoch: int):
+        if epoch <= self.warmup_epochs:
+            pct = epoch / self.warmup_epochs
+            return ((self.base_lr - self.initial_lr) * pct) + self.initial_lr
+
+        if epoch > self.warmup_epochs and epoch < self.warmup_epochs+self.decay_epochs:
+            pct = 1 - ((epoch - self.warmup_epochs) / self.decay_epochs)
+            return ((self.base_lr - self.min_lr) * pct) + self.min_lr
+
+        return self.min_lr
 
 
 def lr_scheduler_linear_warmup_linear_decay(
