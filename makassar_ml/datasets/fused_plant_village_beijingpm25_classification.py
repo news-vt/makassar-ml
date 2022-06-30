@@ -100,9 +100,16 @@ def load_data(
         )
 
         # Augment the images.
-        ds_fused = ds_fused.map(
-            lambda image_data, label: ((image_augmentation(image_data[0], size=(image_shape[0], image_shape[1])), image_data[1]), label)
-        )
+        # Flip the train/val.
+        if i < 2:
+            ds_fused = ds_fused.map(
+                lambda image_data, label: ((image_augmentation(image_data[0], size=(image_shape[0], image_shape[1]), flip=True), image_data[1]), label)
+            )
+        # Do not flip the test images.
+        else:
+            ds_fused = ds_fused.map(
+                lambda image_data, label: ((image_augmentation(image_data[0], size=(image_shape[0], image_shape[1]), flip=False), image_data[1]), label)
+            )
 
         # Batch it.
         ds_fused = ds_fused.batch(batch_size)

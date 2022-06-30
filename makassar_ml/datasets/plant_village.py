@@ -3,14 +3,19 @@ import tensorflow as tf
 import tensorflow_datasets as tfds
 
 
-def image_augmentation(image: tf.Tensor, size: tuple[int,int] = None):
+def image_augmentation(
+    image: tf.Tensor,
+    size: tuple[int,int] = None,
+    flip: bool = True,
+    ):
     if size is not None:
         # Preserve original data type for casting after resize operation.
         dtype = image.dtype
         image = tf.image.resize(image, size=size)
         image = tf.cast(image, dtype)
-    image = tf.image.random_flip_left_right(image)
-    image = tf.image.random_flip_up_down(image)
+    if flip:
+        image = tf.image.random_flip_left_right(image)
+        image = tf.image.random_flip_up_down(image)
     image = tf.cast(image, dtype=tf.float32) / tf.constant(256, dtype=tf.float32) # Rescale.
     # image = tfa.image.rotate(image, tf.random.normal(shape=[])*np.pi/180., interpolation='bilinear')
     return image
@@ -33,12 +38,15 @@ def load_data(
         with_info=False,
     )
 
-    # Augment training and validation images.
+    # Augment the images.
     ds_train = ds_train.map(
-        lambda x, y: (image_augmentation(x, size=image_shape[:2]), y)
+        lambda x, y: (image_augmentation(x, size=image_shape[:2], flip=True), y)
     )
     ds_val = ds_val.map(
-        lambda x, y: (image_augmentation(x, size=image_shape[:2]), y)
+        lambda x, y: (image_augmentation(x, size=image_shape[:2], flip=True), y)
+    )
+    ds_test = ds_test.map(
+        lambda x, y: (image_augmentation(x, size=image_shape[:2], flip=False), y)
     )
 
     # Batch the images.
