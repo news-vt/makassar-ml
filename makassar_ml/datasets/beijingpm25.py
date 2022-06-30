@@ -145,7 +145,9 @@ def load_beijingpm25_ds(
         return ds
 
 
-
+def load_data(*args, **kwargs):
+    """Wrapper for loading Beijing PM2.5 dataset."""
+    return load_beijingpm25_ds(*args, **kwargs)
 
 
 
