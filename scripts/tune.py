@@ -19,6 +19,8 @@ import shutil
 import tensorflow as tf
 import tensorflow.keras as keras
 import yaml
+import seaborn as sns
+sns.set()
 
 # Set random seeds.
 SEED = 0
@@ -204,10 +206,31 @@ def main(
     csv_df = df[table_header].sort_values(by='val_loss', ascending=True)
     logger.info(csv_df.to_string(index=False))
     # Log results as CSV to file.
-    csv_df.to_csv(
-        Path(config['roots']['hp_tuning_root'])/config['model']['name']/f"tuning_results.csv",
-        index=False,
+    csv_path = Path(config['roots']['hp_tuning_root'])/config['model']['name']/f"tuning_results.csv"
+    csv_df.to_csv(csv_path, index=False)
+    logger.info(csv_path)
+
+    # Export the dataframe to LaTeX using custom style.
+    latex_df = csv_df
+    latex_df.columns = latex_df.columns.map(lambda x: x.replace('_', '\_')) # Escape the header names too.
+    styler = latex_df.style
+    styler = styler.format(str, escape='latex') # Default is to convert all cells to their string representation.
+    subset = []
+    for m in ['loss']+config['train']['compile']['metrics']:
+        if m in set(latex_df.columns):
+            subset.append(f"{m}")
+            subset.append(f"val\_{m}")
+            subset.append(f"test\_{m}")
+    styler = styler.format(formatter='{:.4f}', subset=subset)
+    styler = styler.highlight_min(subset=subset, axis=0, props='textbf:--rwrap;')
+    styler = styler.hide(axis=0) # Hide the index.
+    latex_path = Path(config['roots']['table_root'])/f"{config['model']['name']}_tuning_results.tex"
+    styler.to_latex(
+        buf=latex_path,
+        hrules=True,
     )
+    latex_df.columns = latex_df.columns.map(lambda x: x.replace('\_', '_')) # Convert header names back.
+    logger.info(latex_path)
 
     ###
     # Plotting.
@@ -219,7 +242,7 @@ def main(
             fig = ml.visualization.plot_metric(hist, key)
             path = Path(config['roots']['image_root'])/f"tuned_{config['model']['name']}_metric_{key}.png"
             fig.savefig(path, bbox_inches='tight')
-            logger.info(f"{path}")
+            logger.info(path)
             # fig.show()
 
         # # Load the data in dataframe form.
