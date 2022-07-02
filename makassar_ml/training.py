@@ -92,6 +92,7 @@ def train_evaluate_model(
         metrics_path = checkpoint_path.parent/'metrics.json'
 
     # List of callbacks during training.
+    callbacks = callbacks.copy() # Create a copy so that the original is not modified.
     callbacks.extend([
         # Save model checkpoint after every epoch.
         keras.callbacks.ModelCheckpoint(
