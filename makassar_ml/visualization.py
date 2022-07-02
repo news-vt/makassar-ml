@@ -12,8 +12,8 @@ def plot_metric(history: dict, metric: str) -> plt.Figure:
     plt.plot(history[metric], label='train')
     plt.plot(history[f"val_{metric}"], label='val')
     plt.xlim(0, len(history[metric])-1)
-    plt.xlabel('Epoch')
-    plt.ylabel(metric.upper())
+    plt.xlabel('epoch')
+    plt.ylabel(metric)
     plt.legend(loc='upper left')
     return fig
 
