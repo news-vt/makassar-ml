@@ -4,10 +4,10 @@ dataset:
   parameters:
     timeseries_path: ${HOME}/research/makassar/datasets/beijing_pm25
     timeseries_datetime_column: 'datetime'
-    timeseries_features: &ID_timeseries_features ['day_of_year','DEWP','TEMP','PRES','Iws','Is','Ir']
+    timeseries_features: &ID_timeseries_features ['TEMP','DEWP','PRES','Iws']
     timeseries_timedelta_dict: 
-      hours: 72
-    timeseries_reserve_offset_index: &ID_seq_len 73 # 1 + length of timedelta
+      hours: 24
+    timeseries_reserve_offset_index: &ID_seq_len 25 # 1 + length of timedelta
     image_shape: &ID_image_shape [72,72,3]
     split: ['train[0%:70%]', 'train[70%:90%]', 'train[90%:]']
     shuffle_files: False
@@ -26,16 +26,16 @@ model:
         - 32
     seq_embed_dim:
       values:
-        - 16
-        - 32
+        - 5
+        - 10
     n_heads: 
       values:
         - 8
+        - 12
     ff_dim:
       values:
         - 256
-        - 512
-    dropout: 
+    dropout:
       values:
         - 0.1
         - 0.3
@@ -43,22 +43,30 @@ model:
       values:
         - 3
         - 6
-    fc_units:
-      values:
-        - []
-        - [256, 256]
-        - [512, 512]
+    fc_units: []
 
 # Training configuration.
 train:
-  batch_size: 128
+  batch_size: 256
   epochs: 30
 
   # Optimizer.
   optimizer:
     name: adam
     parameters:
-      lr: 1.0e-4
+      # lr: 1.0e-4
+      lr:
+        values:
+          - 1.0e-3
+          # - CosineDecay:
+          #     initial_learning_rate: 1.0e-3
+          #     decay_steps: 3450
+          #     alpha: 0.1
+          # - CosineDecayRestarts:
+          #     initial_learning_rate: 1.0e-3
+          #     first_decay_steps: 1150 # 3450/3
+          #     alpha: 0.1
+          #     m_mul: 0.8
 
   # Compile parameters.
   compile:
