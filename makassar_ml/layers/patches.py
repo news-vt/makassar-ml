@@ -4,8 +4,8 @@ import tensorflow.keras as keras
 
 
 class Patches(keras.layers.Layer):
-    def __init__(self, patch_size):
-        super().__init__()
+    def __init__(self, patch_size: int, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.patch_size = patch_size
 
     def call(self, images: tf.Tensor):

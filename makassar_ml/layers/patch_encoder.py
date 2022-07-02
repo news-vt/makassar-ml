@@ -4,8 +4,8 @@ import tensorflow.keras as keras
 
 
 class PatchEncoder(keras.layers.Layer):
-    def __init__(self, num_patches: int, projection_dim: int):
-        super().__init__()
+    def __init__(self, num_patches: int, projection_dim: int, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.num_patches = num_patches
         self.projection_dim = projection_dim
 
