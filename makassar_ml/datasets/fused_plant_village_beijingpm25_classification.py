@@ -23,7 +23,7 @@ def fuse_dated_images_timeseries(
         for (image, date), label in ds_images_dates:
             end_date = dt.datetime.strptime(date.numpy().decode('utf8'), datetime_format)
             start_date = end_date - dt.timedelta(**timedelta_dict)
-            df_timeseries_range = df_timeseries_datetimeindex.loc[start_date:end_date]
+            df_timeseries_range = df_timeseries_datetimeindex.loc[start_date:end_date].iloc[:-1] # Exclude the last one. WARNING: this assumes that the end timestamp is in the dataset.
             df_timeseries_range.reset_index(inplace=True)
             if features is not None:
                 df_timeseries_range = df_timeseries_range[features]
