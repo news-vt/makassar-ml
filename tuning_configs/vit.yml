@@ -35,8 +35,8 @@ model:
     fc_units:
       values:
         - []
+        - [256]
         - [256, 256]
-        - [512, 512]
 
 # Training configuration.
 train:
