@@ -3,5 +3,6 @@ from . import (
     utility,
     beijingpm25,
     fused_plant_village_beijingpm25_classification,
+    fused_plant_village_beijingpm25_regression,
     plant_village,
 )
