@@ -15,11 +15,13 @@ if path not in sys.path:
 import argparse
 import logging
 import makassar_ml as ml
+import matplotlib.pyplot as plt
+import numpy as np
+import seaborn as sns
 import shutil
 import tensorflow as tf
 import tensorflow.keras as keras
 import yaml
-import seaborn as sns
 sns.set()
 
 # Set random seeds.
@@ -180,7 +182,7 @@ def main(
     parameterdict = ml.tuning.config2parameterdict(config)
 
     # Train and evaluate the model.
-    model, hist, met, params, df = ml.tuning.hp_gridsearch(
+    model, hist, met, params, df, allhist = ml.tuning.hp_gridsearch(
         model_name=config['model']['name'],
         params=parameterdict,
         build_model_func=build_model_func,
@@ -237,10 +239,39 @@ def main(
     ###
 
     if not no_plot:
-        # Plot train/val performance.
+
+        # Plot train/val performance for best model.
         for key in config['train']['compile']['metrics']+['loss']:
             fig = ml.visualization.plot_metric(hist, key)
-            path = Path(config['roots']['image_root'])/f"tuned_{config['model']['name']}_metric_{key}.png"
+            path = Path(config['roots']['image_root'])/f"tuned_{config['model']['name']}_metric_{key}_best.png"
+            fig.savefig(path, bbox_inches='tight')
+            logger.info(path)
+            # fig.show()
+
+        # Plot train/val/test metrics for all models.
+        n_hist = len(allhist)
+        color = plt.cm.rainbow(np.linspace(0, 1, n_hist))
+        for key in config['train']['compile']['metrics']+['loss']:
+            fig = plt.figure(figsize=(8,6))
+            for i, (h, c) in enumerate(zip(allhist, color)):
+                plt.plot(h[key], label=f"model {i} train", color=c, linestyle='-')
+                plt.xlim(0, len(h[key])-1)
+            plt.xlabel('epoch')
+            plt.ylabel(key)
+            plt.legend(loc='center left', ncol=2, bbox_to_anchor=(1.04,0.5))
+            path = Path(config['roots']['image_root'])/f"tuned_{config['model']['name']}_metric_{key}_all_train.png"
+            fig.savefig(path, bbox_inches='tight')
+            logger.info(path)
+            # fig.show()
+
+            fig = plt.figure(figsize=(8,6))
+            for i, (h, c) in enumerate(zip(allhist, color)):
+                plt.plot(h[f'val_{key}'], label=f"model {i} val", color=c, linestyle='-')
+                plt.xlim(0, len(h[key])-1)
+            plt.xlabel('epoch')
+            plt.ylabel(key)
+            plt.legend(loc='center left', ncol=2, bbox_to_anchor=(1.04,0.5))
+            path = Path(config['roots']['image_root'])/f"tuned_{config['model']['name']}_metric_{key}_all_val.png"
             fig.savefig(path, bbox_inches='tight')
             logger.info(path)
             # fig.show()
