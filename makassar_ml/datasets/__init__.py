@@ -3,4 +3,5 @@ from . import (
     utility,
     beijingpm25,
     fused_plant_village_beijingpm25_classification,
+    plant_village,
 )
