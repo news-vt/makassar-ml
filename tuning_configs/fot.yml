@@ -6,8 +6,8 @@ dataset:
     # in_feat: &ID_in_feat ['day_of_year','TEMP','Iws','Is','Ir']
     # in_feat: &ID_in_feat ['pm2.5','TEMP','Iws','Ir']
     # out_feat: &ID_out_feat ['DEWP','PRES']
-    in_feat: &ID_in_feat ['TEMP','DEWP','PRES']
-    out_feat: &ID_out_feat ['pm2.5','Iws','Ir']
+    in_feat: &ID_in_feat ['TEMP','DEWP','PRES','Iws']
+    out_feat: &ID_out_feat ['pm2.5','Ir']
     in_seq_len: &ID_in_seq_len 24 # 1 day
     out_seq_len: &ID_out_seq_len 1 # 1 hour
     shift: 1
