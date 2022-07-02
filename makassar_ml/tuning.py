@@ -130,7 +130,7 @@ def hp_gridsearch(
     epochs: int = 10,
     tuning_root: str = None,
     callbacks: list = [],
-    ) -> tuple[keras.models.Model, pd.DataFrame, dict, pd.DataFrame]:
+    ) -> tuple[keras.models.Model, pd.DataFrame, dict, pd.DataFrame, list[pd.DataFrame]]:
     """Train and evaluate a model on a given dataset.
 
     If checkpoint exists then the model is loaded in place of training.
@@ -256,4 +256,4 @@ def hp_gridsearch(
     hist = load_history(history_path)
     met = load_metrics(metrics_path)
 
-    return model, hist, met, params, df
+    return model, hist, met, params, df, histories
