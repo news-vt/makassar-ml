@@ -49,9 +49,19 @@ def load_data(
         lambda x, y: (image_augmentation(x, size=image_shape[:2], flip=False), y)
     )
 
-    # Batch the images.
+    # Batch it.
     ds_train = ds_train.batch(batch_size)
     ds_val = ds_val.batch(batch_size)
     ds_test = ds_test.batch(batch_size)
+
+    # Prefetch it.
+    ds_train = ds_train.prefetch(tf.data.AUTOTUNE)
+    ds_val = ds_val.prefetch(tf.data.AUTOTUNE)
+    ds_test = ds_test.prefetch(tf.data.AUTOTUNE)
+
+    # Cache it.
+    ds_train = ds_train.cache()
+    ds_val = ds_val.cache()
+    ds_test = ds_test.cache()
 
     return ds_train, ds_val, ds_test
