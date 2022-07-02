@@ -122,6 +122,12 @@ def load_data(
         # Batch it.
         ds_fused = ds_fused.batch(batch_size)
 
+        # Prefetch it.
+        ds_fused = ds_fused.prefetch(tf.data.AUTOTUNE)
+
+        # Cache it.
+        ds_fused = ds_fused.cache()
+
         # Append to output list.
         ds_fused_out.append(ds_fused)
 
