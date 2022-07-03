@@ -115,7 +115,7 @@ class RegressionTaskHead(keras.layers.Layer):
         embed_dim: int,
         **kwargs,
         ):
-        """Classification Task Head.
+        """Regression Task Head.
         """
         super().__init__(**kwargs)
         assert isinstance(out_feat, int)
