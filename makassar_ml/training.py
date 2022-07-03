@@ -61,7 +61,6 @@ def train_evaluate_model(
     datagen_val: tf.data.Dataset,
     datagen_test: tf.data.Dataset,
     epochs: int,
-    metric_list: list[str],
     checkpoint_path: str,
     history_path: str = None,
     metrics_path: str = None,
@@ -122,13 +121,10 @@ def train_evaluate_model(
 
     # Create dictionary of metrics to return and preserve in file.
     metrics = {}
-    for i, key in enumerate(metric_list):
-        metrics[key] = history.history[key][-1]
-        metrics[f"val_{key}"] = history.history[f"val_{key}"][-1]
-        metrics[f"test_{key}"] = test_metrics[i+1]
-    metrics['loss'] = history.history['loss'][-1]
-    metrics['val_loss'] = history.history['val_loss'][-1]
-    metrics['test_loss'] = test_metrics[0]
+    for i, (key, val) in enumerate(history.history.items()):
+        metrics[key] = val[-1]
+        if not key.startswith('val_'):
+            metrics[f"test_{key}"] = test_metrics[i]
 
     # Dump metrics to JSON file.
     with open(metrics_path, 'w') as f:
