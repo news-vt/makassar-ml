@@ -1,0 +1,87 @@
+# Dataset.
+dataset:
+  name: fused_plant_village_beijingpm25_multitask
+  parameters:
+    timeseries_path: ${HOME}/research/makassar/datasets/beijing_pm25
+    timeseries_datetime_column: 'datetime'
+    timeseries_features_in: &ID_timeseries_features_in ['TEMP','DEWP','PRES','Iws']
+    timeseries_features_out: &ID_timeseries_features_out ['pm2.5','Ir']
+    timeseries_seq_len_in: &ID_seq_len_in 24
+    timeseries_seq_len_out: &ID_seq_len_out 1
+    timeseries_reserve_offset_index_in: *ID_seq_len_in
+    timeseries_reserve_offset_index_out: *ID_seq_len_out
+    image_shape: &ID_image_shape [72,72,3]
+    split: ['train[0%:70%]', 'train[70%:90%]', 'train[90%:]']
+    shuffle_files: False
+
+# Model definition.
+model:
+  name: FuT_image_timeseries_multitask
+  parameters:
+    image_shape: *ID_image_shape
+    in_seq_shape: [*ID_seq_len_in, !len [*ID_timeseries_features_in]] # (seq,feat)
+    out_seq_shape: [*ID_seq_len_out, !len [*ID_timeseries_features_out]] # (seq,feat)
+    n_class: 38
+    patch_size: 6
+    image_embed_dim: 
+      values:
+        - 16
+        - 32
+    seq_embed_dim:
+      values:
+        - 5
+        - 10
+    fusion_embed_dim:
+      values:
+        - 8
+        - 16
+    n_heads: 
+      values:
+        - 8
+    ff_dim:
+      values:
+        - 256
+    dropout:
+      values:
+        - 0.3
+    n_encoders:
+      values:
+        - 3
+        - 6
+    fc_units: []
+
+# Training configuration.
+train:
+  batch_size: 256
+  # epochs: 30
+  epochs: 2
+
+  # Optimizer.
+  optimizer:
+    name: adam
+    parameters:
+      lr:
+        values:
+          - 1.0e-3
+          - CosineDecay:
+              initial_learning_rate: 1.0e-3
+              decay_steps: 4470
+              alpha: 0.1
+
+  # Compile parameters.
+  compile:
+    loss:
+      classifier: sparse_categorical_crossentropy
+      regressor: mse
+    metrics:
+      classifier: accuracy
+      regressor: ['mae','mape']
+
+# Root directory paths.
+roots:
+  project_root: &ID_project_root ${HOME}/research/makassar/
+  checkpoint_root: !join [*ID_project_root, checkpoints]
+  image_root: !join [*ID_project_root, images]
+  table_root: !join [*ID_project_root, tables]
+  hp_tuning_root: !join [*ID_project_root, hp_tuning]
+  keras_tuner_path: !join [*ID_project_root, keras_tuner]
