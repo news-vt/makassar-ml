@@ -197,17 +197,20 @@ def main(
 
 
     metric_keys = list(set(hist.keys()) - set(['epoch']))
+    print(df.head())
 
     logger.info(f"Tuning Results:")
     # Build the resulting table header.
-    table_header = ['model']
-    # for m in ['loss']+config['train']['compile']['metrics']:
-    #     table_header.append(f"{m}")
-    #     table_header.append(f"val_{m}")
-    #     table_header.append(f"test_{m}")
-    table_header.extend(metric_keys)
+    table_header = df.keys()
+    # table_header = ['model']
+    # # for m in ['loss']+config['train']['compile']['metrics']:
+    # #     table_header.append(f"{m}")
+    # #     table_header.append(f"val_{m}")
+    # #     table_header.append(f"test_{m}")
+    # table_header.extend(metric_keys)
     # Log results as CSV to console.
-    csv_df = df[table_header].sort_values(by='val_loss', ascending=True)
+    # csv_df = df[table_header].sort_values(by='val_loss', ascending=True)
+    csv_df = df.sort_values(by='val_loss', ascending=True)
     logger.info(csv_df.to_string(index=False))
     # Log results as CSV to file.
     csv_path = Path(config['roots']['hp_tuning_root'])/config['model']['name']/f"tuning_results.csv"
@@ -215,7 +218,7 @@ def main(
     logger.info(csv_path)
 
     # Export the dataframe to LaTeX using custom style.
-    latex_df = csv_df
+    latex_df = df
     latex_df.columns = latex_df.columns.map(lambda x: x.replace('_', '\_')) # Escape the header names too.
     styler = latex_df.style
     styler = styler.format(str, escape='latex') # Default is to convert all cells to their string representation.
@@ -229,16 +232,20 @@ def main(
         formatter='{:.4f}',
         subset=[key.replace('_', '\_') for key in metric_keys],
     )
-    styler = styler.highlight_max(
-        subset=[key.replace('_', '\_') for key in metric_keys if 'accuracy' in key],
-        axis=0,
-        props='textbf:--rwrap;',
-    )
-    styler = styler.highlight_min(
-        subset=[key.replace('_', '\_') for key in metric_keys if 'accuracy' not in key], 
-        axis=0,
-        props='textbf:--rwrap;',
-    )
+    subset = [key.replace('_', '\_') for key in metric_keys if 'accuracy' in key]
+    if len(subset) > 0:
+        styler = styler.highlight_max(
+            subset=subset,
+            axis=0,
+            props='textbf:--rwrap;',
+        )
+    subset = [key.replace('_', '\_') for key in metric_keys if 'accuracy' not in key]
+    if len(subset) > 0:
+        styler = styler.highlight_min(
+            subset=subset, 
+            axis=0,
+            props='textbf:--rwrap;',
+        )
     styler = styler.hide(axis=0) # Hide the index.
     latex_path = Path(config['roots']['table_root'])/f"{config['model']['name']}_tuning_results.tex"
     styler.to_latex(
