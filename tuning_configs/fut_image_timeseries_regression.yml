@@ -32,7 +32,8 @@ model:
         - 10
     fusion_embed_dim:
       values:
-        - 10
+        - 8
+        - 16
     n_heads: 
       values:
         - 8
@@ -41,7 +42,6 @@ model:
         - 256
     dropout:
       values:
-        - 0.1
         - 0.3
     n_encoders:
       values:
