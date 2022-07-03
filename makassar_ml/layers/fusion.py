@@ -109,8 +109,66 @@ class ClassificationTaskHead(keras.layers.Layer):
         return config
 
 
+class RegressionTaskHead(keras.layers.Layer):
+    def __init__(self, 
+        out_feat: int,
+        embed_dim: int,
+        **kwargs,
+        ):
+        """Classification Task Head.
+        """
+        super().__init__(**kwargs)
+        assert isinstance(out_feat, int)
+        assert isinstance(embed_dim, int)
+        self.out_feat = out_feat
+        self.embed_dim = embed_dim
+
+        # Build dense network.
+        self.regressor = keras.layers.Dense(units=out_feat, activation='linear')
+
+    def build(self, input_shape):
+        n_inputs = len(input_shape)
+        self.layers_embed = []
+        for _ in range(n_inputs):
+            self.layers_embed.append(keras.layers.Dense(units=self.embed_dim))
+
+    def call(self, inputs):
+        # Flatten the input branches.
+        branches = []
+        for inp, layer in zip(inputs,self.layers_embed):
+            x = layer(inp)
+            branches.append(x)
+
+        # Concatenate.
+        x = keras.layers.Concatenate(axis=-2)(branches)
+
+        # Flatten.
+        x = keras.layers.Flatten(data_format='channels_last')(x)
+
+        # Regression.
+        x = self.regressor(x)
+
+        # # Reshape to [1,None].
+        # x = keras.layers.Reshape([1,-1])(x)
+
+        return x
+
+    def get_config(self) -> dict:
+        """Retreive custom layer configuration for future loading.
+
+        Returns:
+            dict: Configuration dictionary.
+        """
+        config = super().get_config().copy()
+        config.update({
+            'out_feat': self.out_feat,
+            'embed_dim': self.embed_dim,
+        })
+        return config
+
 
 # Update custom objects dictionary.
 keras.utils.get_custom_objects()['ImageInputHead'] = ImageInputHead
 keras.utils.get_custom_objects()['TimeSeriesInputHead'] = TimeSeriesInputHead
 keras.utils.get_custom_objects()['ClassificationTaskHead'] = ClassificationTaskHead
+keras.utils.get_custom_objects()['RegressionTaskHead'] = RegressionTaskHead

@@ -12,4 +12,5 @@ from .fusion import (
     ImageInputHead,
     TimeSeriesInputHead,
     ClassificationTaskHead,
+    RegressionTaskHead,
 )
