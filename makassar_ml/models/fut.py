@@ -165,7 +165,7 @@ def FuT_image_timeseries_regression(
 
     # Task head.
     task_head = RegressionTaskHead(
-        out_feat=out_seq_shape[-1],
+        out_seq_shape=out_seq_shape,
         embed_dim=fusion_embed_dim,
         name='regressor',
     )

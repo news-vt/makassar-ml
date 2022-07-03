@@ -1,6 +1,6 @@
 from __future__ import annotations
 import tensorflow.keras as keras
-from tensorflow import Tensor
+from tensorflow import Tensor, reduce_prod
 from ..layers import (
     Patches,
     PatchEncoder,
@@ -111,20 +111,18 @@ class ClassificationTaskHead(keras.layers.Layer):
 
 class RegressionTaskHead(keras.layers.Layer):
     def __init__(self, 
-        out_feat: int,
+        out_seq_shape: int,
         embed_dim: int,
         **kwargs,
         ):
         """Regression Task Head.
         """
         super().__init__(**kwargs)
-        assert isinstance(out_feat, int)
-        assert isinstance(embed_dim, int)
-        self.out_feat = out_feat
+        self.out_seq_shape = out_seq_shape
         self.embed_dim = embed_dim
 
         # Build dense network.
-        self.regressor = keras.layers.Dense(units=out_feat, activation='linear')
+        self.dense_regressor = keras.layers.Dense(units=reduce_prod(out_seq_shape), activation='linear')
 
     def build(self, input_shape):
         n_inputs = len(input_shape)
@@ -146,10 +144,10 @@ class RegressionTaskHead(keras.layers.Layer):
         x = keras.layers.Flatten(data_format='channels_last')(x)
 
         # Regression.
-        x = self.regressor(x)
+        x = self.dense_regressor(x)
 
-        # Reshape to [1,None].
-        x = keras.layers.Reshape([1,-1])(x)
+        # Reshape to desired output sequence shape.
+        x = keras.layers.Reshape(self.out_seq_shape)(x)
 
         return x
 
@@ -161,7 +159,7 @@ class RegressionTaskHead(keras.layers.Layer):
         """
         config = super().get_config().copy()
         config.update({
-            'out_feat': self.out_feat,
+            'out_seq_shape': self.out_seq_shape,
             'embed_dim': self.embed_dim,
         })
         return config
