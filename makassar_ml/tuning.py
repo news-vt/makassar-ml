@@ -124,7 +124,6 @@ def hp_gridsearch(
     params: dict,
     build_model_func: Callable[[dict], keras.Model], # this function must compile the model too.
     dataset_loader_func: Callable[[int], tuple[tf.data.Dataset, tf.data.Dataset, tf.data.Dataset]],
-    metric_list: list[str],
     batch_size: int = 128,
     strategy: tf.distribute.Strategy = tf.distribute.get_strategy(),
     epochs: int = 10,
@@ -167,6 +166,10 @@ def hp_gridsearch(
     with open(tuning_model_root/'parameter_grid.json', 'w') as f:
         json.dump(list(grid), f, default=lambda o: '<not serializable>')
 
+    # Pre-load dataset for faster training.
+    with strategy.scope():
+        dataset_train, dataset_val, dataset_test = dataset_loader_func(batch_size=batch_size)
+
     # Iterate over the parameter grid to train the models.
     df_results: list[dict] = []
     histories: list = []
@@ -207,8 +210,8 @@ def hp_gridsearch(
             with strategy.scope():
                 logger.info(f"[{model_name}, {cur_model_name}] Model building...")
 
-                # Load the dataset.
-                dataset_train, dataset_val, dataset_test = dataset_loader_func(batch_size=batch_size)
+                # # Load the dataset.
+                # dataset_train, dataset_val, dataset_test = dataset_loader_func(batch_size=batch_size)
 
                 # Build and compile model.
                 model = build_model_func(p)
@@ -222,7 +225,6 @@ def hp_gridsearch(
                 datagen_val=dataset_val,
                 datagen_test=dataset_test,
                 epochs=epochs,
-                metric_list=metric_list,
                 checkpoint_path=checkpoint_path,
                 history_path=history_path,
                 metrics_path=metrics_path,
