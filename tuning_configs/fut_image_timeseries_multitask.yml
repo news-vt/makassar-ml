@@ -53,8 +53,7 @@ model:
 # Training configuration.
 train:
   batch_size: 256
-  # epochs: 30
-  epochs: 2
+  epochs: 30
 
   # Optimizer.
   optimizer:
