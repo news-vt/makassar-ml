@@ -15,4 +15,5 @@ from .fot import FoT
 from .fut import (
     FuT,
     FuT_image_timeseries_classifier,
+    FuT_image_timeseries_regression,
 )
