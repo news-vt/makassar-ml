@@ -148,8 +148,8 @@ class RegressionTaskHead(keras.layers.Layer):
         # Regression.
         x = self.regressor(x)
 
-        # # Reshape to [1,None].
-        # x = keras.layers.Reshape([1,-1])(x)
+        # Reshape to [1,None].
+        x = keras.layers.Reshape([1,-1])(x)
 
         return x
 
