@@ -187,7 +187,6 @@ def main(
         params=parameterdict,
         build_model_func=build_model_func,
         dataset_loader_func=dataset_loader_func,
-        metric_list=config['train']['compile']['metrics'],
         batch_size=config['train']['batch_size'],
         strategy=strategy,
         epochs=config['train']['epochs'],
@@ -196,14 +195,17 @@ def main(
     )
     model.summary(print_fn=logger.info)
 
+
+    metric_keys = list(set(hist.keys()) - set(['epoch']))
+
     logger.info(f"Tuning Results:")
     # Build the resulting table header.
     table_header = ['model']
-    for m in ['loss']+config['train']['compile']['metrics']:
-        table_header.append(f"{m}")
-        table_header.append(f"val_{m}")
-        table_header.append(f"test_{m}")
-    table_header.extend(list(parameterdict))
+    # for m in ['loss']+config['train']['compile']['metrics']:
+    #     table_header.append(f"{m}")
+    #     table_header.append(f"val_{m}")
+    #     table_header.append(f"test_{m}")
+    table_header.extend(metric_keys)
     # Log results as CSV to console.
     csv_df = df[table_header].sort_values(by='val_loss', ascending=True)
     logger.info(csv_df.to_string(index=False))
@@ -217,14 +219,26 @@ def main(
     latex_df.columns = latex_df.columns.map(lambda x: x.replace('_', '\_')) # Escape the header names too.
     styler = latex_df.style
     styler = styler.format(str, escape='latex') # Default is to convert all cells to their string representation.
-    subset = []
-    for m in ['loss']+config['train']['compile']['metrics']:
-        if m in set(latex_df.columns):
-            subset.append(f"{m}")
-            subset.append(f"val\_{m}")
-            subset.append(f"test\_{m}")
-    styler = styler.format(formatter='{:.4f}', subset=subset)
-    styler = styler.highlight_min(subset=subset, axis=0, props='textbf:--rwrap;')
+    # subset = [key.replace('_', '\_') for key in hist.keys()]
+    # # for m in ['loss']+config['train']['compile']['metrics']:
+    # #     if m in set(latex_df.columns):
+    # #         subset.append(f"{m}")
+    # #         subset.append(f"val\_{m}")
+    # #         subset.append(f"test\_{m}")
+    styler = styler.format(
+        formatter='{:.4f}',
+        subset=[key.replace('_', '\_') for key in metric_keys],
+    )
+    styler = styler.highlight_max(
+        subset=[key.replace('_', '\_') for key in metric_keys if 'accuracy' in key],
+        axis=0,
+        props='textbf:--rwrap;',
+    )
+    styler = styler.highlight_min(
+        subset=[key.replace('_', '\_') for key in metric_keys if 'accuracy' not in key], 
+        axis=0,
+        props='textbf:--rwrap;',
+    )
     styler = styler.hide(axis=0) # Hide the index.
     latex_path = Path(config['roots']['table_root'])/f"{config['model']['name']}_tuning_results.tex"
     styler.to_latex(
@@ -240,8 +254,11 @@ def main(
 
     if not no_plot:
 
+        raw_keys = [key for key in metric_keys if not key.startswith('val_')]
+
         # Plot train/val performance for best model.
-        for key in config['train']['compile']['metrics']+['loss']:
+        # for key in config['train']['compile']['metrics']+['loss']:
+        for key in raw_keys:
             fig = ml.visualization.plot_metric(hist, key)
             path = Path(config['roots']['image_root'])/f"tuned_{config['model']['name']}_metric_{key}_best.png"
             fig.savefig(path, bbox_inches='tight')
@@ -251,14 +268,15 @@ def main(
         # Plot train/val/test metrics for all models.
         n_hist = len(allhist)
         color = plt.cm.rainbow(np.linspace(0, 1, n_hist))
-        for key in config['train']['compile']['metrics']+['loss']:
+        # for key in config['train']['compile']['metrics']+['loss']:
+        for key in raw_keys:
             fig = plt.figure(figsize=(8,6))
             for i, (h, c) in enumerate(zip(allhist, color)):
                 plt.plot(h[key], label=f"model {i} train", color=c, linestyle='-')
                 plt.xlim(0, len(h[key])-1)
             plt.xlabel('epoch')
             plt.ylabel(key)
-            plt.legend(loc='center left', ncol=2, bbox_to_anchor=(1.04,0.5))
+            plt.legend(loc='center left', ncol=max(n_hist//16, 1), bbox_to_anchor=(1.04,0.5))
             path = Path(config['roots']['image_root'])/f"tuned_{config['model']['name']}_metric_{key}_all_train.png"
             fig.savefig(path, bbox_inches='tight')
             logger.info(path)
@@ -270,7 +288,7 @@ def main(
                 plt.xlim(0, len(h[key])-1)
             plt.xlabel('epoch')
             plt.ylabel(key)
-            plt.legend(loc='center left', ncol=2, bbox_to_anchor=(1.04,0.5))
+            plt.legend(loc='center left', ncol=max(n_hist//16, 1), bbox_to_anchor=(1.04,0.5))
             path = Path(config['roots']['image_root'])/f"tuned_{config['model']['name']}_metric_{key}_all_val.png"
             fig.savefig(path, bbox_inches='tight')
             logger.info(path)
