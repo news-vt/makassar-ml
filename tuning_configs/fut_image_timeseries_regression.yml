@@ -38,7 +38,6 @@ model:
     n_heads: 
       values:
         - 8
-        - 12
     ff_dim:
       values:
         - 256
@@ -60,7 +59,6 @@ train:
   optimizer:
     name: adam
     parameters:
-      # lr: 1.0e-4
       lr:
         values:
           - 1.0e-3
