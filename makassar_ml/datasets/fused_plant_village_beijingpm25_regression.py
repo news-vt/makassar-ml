@@ -10,33 +10,34 @@ from .plant_village import image_augmentation
 def fuse_dated_images_timeseries(
     ds_images_dates: tf.data.Dataset,
     df_timeseries: pd.DataFrame,
-    in_timedelta_dict: dict, # i.e., {'days':1, 'hours':24, 'minutes':5}
-    out_timedelta_dict: dict, # i.e., {'days':1, 'hours':24, 'minutes':5}
+    in_seq_len: int,
+    out_seq_len: int,
     datetime_column: str = 'datetime',
     datetime_format: str = '%Y-%m-%d %H:%M:%S',
     in_features: list[str] = None,
     out_features: list[str] = None,
     ):
 
-    # Set the index to datetime so lookup is quicker.
-    df_timeseries_datetimeindex = df_timeseries.set_index([datetime_column])
+    # Set the index to datetime and integer so lookup is quicker.
+    df_timeseries['integer_index'] = range(len(df_timeseries.index))
+    df_timeseries_datetimeindex = df_timeseries.set_index([datetime_column,'integer_index'])
 
     def gen():
         for (image, date), _ in ds_images_dates:
 
             # Get history and image.
-            end_date = dt.datetime.strptime(date.numpy().decode('utf8'), datetime_format)
-            start_date = end_date - dt.timedelta(**in_timedelta_dict)
-            df_timeseries_range_in = df_timeseries_datetimeindex.loc[start_date:end_date].iloc[:-1] # Exclude the last one. WARNING: this assumes that the end timestamp is in the dataset.
+            date_obj = dt.datetime.strptime(date.numpy().decode('utf8'), datetime_format)
+            date_idx = df_timeseries_datetimeindex.loc[date_obj].index.values[0]
+            idx_start = date_idx - in_seq_len
+            df_timeseries_range_in = df_timeseries_datetimeindex[idx_start:date_idx]
             df_timeseries_range_in.reset_index(inplace=True)
             if in_features is not None:
                 df_timeseries_range_in = df_timeseries_range_in[in_features]
             tensor_timeseries_range_in = tf.convert_to_tensor(df_timeseries_range_in)
 
             # Get output values.
-            start_date = dt.datetime.strptime(date.numpy().decode('utf8'), datetime_format)
-            end_date = start_date + dt.timedelta(**out_timedelta_dict)
-            df_timeseries_range_out = df_timeseries_datetimeindex.loc[start_date:end_date].iloc[:-1] # Exclude the last one. WARNING: this assumes that the end timestamp is in the dataset.
+            idx_end = date_idx + out_seq_len
+            df_timeseries_range_out = df_timeseries_datetimeindex[date_idx:idx_end]
             df_timeseries_range_out.reset_index(inplace=True)
             if out_features is not None:
                 df_timeseries_range_out = df_timeseries_range_out[out_features]
@@ -66,8 +67,8 @@ def load_data(
     timeseries_datetime_column: str,
     timeseries_features_in: list[str],
     timeseries_features_out: list[str],
-    timeseries_timedelta_dict_in: dict,
-    timeseries_timedelta_dict_out: dict,
+    timeseries_seq_len_in: dict,
+    timeseries_seq_len_out: dict,
     image_shape: list[int, int, int],
     split: list[str, str, str],
     shuffle_files: bool,
@@ -93,6 +94,7 @@ def load_data(
     df_timeseries = load_beijingpm25_df(
         path=timeseries_path,
     )
+    df_timeseries.dropna(inplace=True) # Remove NaN.
 
     # Normalize the time-series data.
     if norm:
@@ -121,8 +123,8 @@ def load_data(
         ds_fused = fuse_dated_images_timeseries(
             ds_images_dates=ds_images_dates, 
             df_timeseries=df_timeseries,
-            in_timedelta_dict=timeseries_timedelta_dict_in,
-            out_timedelta_dict=timeseries_timedelta_dict_out,
+            in_seq_len=timeseries_seq_len_in,
+            out_seq_len=timeseries_seq_len_out,
             in_features=timeseries_features_in,
             out_features=timeseries_features_out,
         )

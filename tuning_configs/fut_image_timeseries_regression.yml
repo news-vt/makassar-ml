@@ -6,12 +6,10 @@ dataset:
     timeseries_datetime_column: 'datetime'
     timeseries_features_in: &ID_timeseries_features_in ['TEMP','DEWP','PRES','Iws']
     timeseries_features_out: &ID_timeseries_features_out ['pm2.5','Ir']
-    timeseries_timedelta_dict_in: 
-      hours: 24
-    timeseries_timedelta_dict_out: 
-      hours: 1
-    timeseries_reserve_offset_index_in: &ID_seq_len_in 24 # length of timedelta
-    timeseries_reserve_offset_index_out: &ID_seq_len_out 1 # length of timedelta
+    timeseries_seq_len_in: &ID_seq_len_in 24
+    timeseries_seq_len_out: &ID_seq_len_out 1
+    timeseries_reserve_offset_index_in: *ID_seq_len_in
+    timeseries_reserve_offset_index_out: *ID_seq_len_out
     image_shape: &ID_image_shape [72,72,3]
     split: ['train[0%:70%]', 'train[70%:90%]', 'train[90%:]']
     shuffle_files: False
