@@ -197,7 +197,7 @@ def main(
 
 
     metric_keys = list(set(hist.keys()) - set(['epoch']))
-    print(df.head())
+    metric_keys.extend([f"test_{key}" for key in metric_keys if not key.startswith('val_')])
 
     logger.info(f"Tuning Results:")
     # Build the resulting table header.
@@ -261,7 +261,7 @@ def main(
 
     if not no_plot:
 
-        raw_keys = [key for key in metric_keys if not key.startswith('val_')]
+        raw_keys = [key for key in metric_keys if not (key.startswith('val_') or key.startswith('test_'))]
 
         # Plot train/val performance for best model.
         # for key in config['train']['compile']['metrics']+['loss']:
