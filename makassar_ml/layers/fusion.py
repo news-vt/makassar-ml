@@ -127,8 +127,8 @@ class RegressionTaskHead(keras.layers.Layer):
     def build(self, input_shape):
         n_inputs = len(input_shape)
         self.layers_embed = []
-        for _ in range(n_inputs):
-            self.layers_embed.append(keras.layers.Dense(units=self.embed_dim))
+        for i in range(n_inputs):
+            self.layers_embed.append(keras.layers.Dense(units=self.embed_dim, name=f"dense_input_{i}"))
 
     def call(self, inputs):
         # Flatten the input branches.
