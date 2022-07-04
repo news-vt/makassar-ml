@@ -196,38 +196,47 @@ def main(
     model.summary(print_fn=logger.info)
 
 
-    metric_keys = list(set(hist.keys()) - set(['epoch']))
-    metric_keys.extend([f"test_{key}" for key in metric_keys if not key.startswith('val_')])
+
+    # Create list of keys.
+    metric_keys_raw = list(set(hist.keys()) - set(['epoch']))
+    metric_keys_base = [key for key in metric_keys_raw if not key.startswith('val_')] # Isolate base metrics.
+    # Generate list of keys in a specific order.
+    metric_keys_sorted = []
+    for metric_base_name in ['loss', 'accuracy']:
+        # Add the exact name first if it appears.
+        if metric_base_name in metric_keys_base:
+            metric_keys_sorted.append(metric_base_name)
+        # Add variations of the name.
+        for key in metric_keys_base:
+            if metric_base_name in key and metric_base_name != key:
+                metric_keys_sorted.append(key)
+    metric_keys_sorted.extend(sorted(set(metric_keys_base) - set(metric_keys_sorted)))
+
+    # Add val/test prefixes.
+    metric_keys = []
+    for key in metric_keys_sorted:
+        metric_keys.append(key)
+        metric_keys.append(f"val_{key}")
+        metric_keys.append(f"test_{key}")
 
     logger.info(f"Tuning Results:")
+
     # Build the resulting table header.
-    table_header = df.keys()
-    # table_header = ['model']
-    # # for m in ['loss']+config['train']['compile']['metrics']:
-    # #     table_header.append(f"{m}")
-    # #     table_header.append(f"val_{m}")
-    # #     table_header.append(f"test_{m}")
-    # table_header.extend(metric_keys)
-    # Log results as CSV to console.
-    # csv_df = df[table_header].sort_values(by='val_loss', ascending=True)
-    csv_df = df.sort_values(by='val_loss', ascending=True)
+    table_header = ['model'] + metric_keys
+    table_header.extend(set(df.keys()) - set(table_header))
+
+    # Log results as CSV to console and a file.
+    csv_df = df[table_header].sort_values(by='val_loss', ascending=True)
     logger.info(csv_df.to_string(index=False))
-    # Log results as CSV to file.
     csv_path = Path(config['roots']['hp_tuning_root'])/config['model']['name']/f"tuning_results.csv"
     csv_df.to_csv(csv_path, index=False)
     logger.info(csv_path)
 
     # Export the dataframe to LaTeX using custom style.
-    latex_df = df
+    latex_df = df[table_header].sort_values(by='val_loss', ascending=True)
     latex_df.columns = latex_df.columns.map(lambda x: x.replace('_', '\_')) # Escape the header names too.
     styler = latex_df.style
     styler = styler.format(str, escape='latex') # Default is to convert all cells to their string representation.
-    # subset = [key.replace('_', '\_') for key in hist.keys()]
-    # # for m in ['loss']+config['train']['compile']['metrics']:
-    # #     if m in set(latex_df.columns):
-    # #         subset.append(f"{m}")
-    # #         subset.append(f"val\_{m}")
-    # #         subset.append(f"test\_{m}")
     styler = styler.format(
         formatter='{:.4f}',
         subset=[key.replace('_', '\_') for key in metric_keys],
@@ -261,11 +270,10 @@ def main(
 
     if not no_plot:
 
-        raw_keys = [key for key in metric_keys if not (key.startswith('val_') or key.startswith('test_'))]
+        # raw_keys = [key for key in metric_keys if not (key.startswith('val_') or key.startswith('test_'))]
 
         # Plot train/val performance for best model.
-        # for key in config['train']['compile']['metrics']+['loss']:
-        for key in raw_keys:
+        for key in metric_keys_base:
             fig = ml.visualization.plot_metric(hist, key)
             path = Path(config['roots']['image_root'])/f"tuned_{config['model']['name']}_metric_{key}_best.png"
             fig.savefig(path, bbox_inches='tight')
@@ -275,8 +283,7 @@ def main(
         # Plot train/val/test metrics for all models.
         n_hist = len(allhist)
         color = plt.cm.rainbow(np.linspace(0, 1, n_hist))
-        # for key in config['train']['compile']['metrics']+['loss']:
-        for key in raw_keys:
+        for key in metric_keys_base:
             fig = plt.figure(figsize=(8,6))
             for i, (h, c) in enumerate(zip(allhist, color)):
                 plt.plot(h[key], label=f"model {i} train", color=c, linestyle='-')
