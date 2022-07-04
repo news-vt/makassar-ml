@@ -11,25 +11,39 @@ from .plant_village import image_augmentation
 def fuse_dated_images_timeseries(
     ds_images_dates: tf.data.Dataset,
     df_timeseries: pd.DataFrame,
-    timedelta_dict: dict, # i.e., {'days':1, 'hours':24, 'minutes':5}
+    in_seq_len: int,
     datetime_column: str = 'datetime',
     datetime_format: str = '%Y-%m-%d %H:%M:%S',
-    features: list[str] = None,
+    in_features: list[str] = None,
     ):
 
     # Set the index to datetime so lookup is quicker.
-    df_timeseries_datetimeindex = df_timeseries.set_index([datetime_column])
+    df_timeseries['integer_index'] = range(len(df_timeseries.index))
+    df_timeseries_datetimeindex = df_timeseries.set_index([datetime_column,'integer_index'])
 
     def gen():
         for (image, date), label in ds_images_dates:
-            end_date = dt.datetime.strptime(date.numpy().decode('utf8'), datetime_format)
-            start_date = end_date - dt.timedelta(**timedelta_dict)
-            df_timeseries_range = df_timeseries_datetimeindex.loc[start_date:end_date].iloc[:-1] # Exclude the last one. WARNING: this assumes that the end timestamp is in the dataset.
-            df_timeseries_range.reset_index(inplace=True)
-            if features is not None:
-                df_timeseries_range = df_timeseries_range[features]
-            tensor_timeseries_range = tf.convert_to_tensor(df_timeseries_range)
-            yield ((image, tensor_timeseries_range), label)
+
+            # Get history and image.
+            date_obj = dt.datetime.strptime(date.numpy().decode('utf8'), datetime_format)
+            date_idx = df_timeseries_datetimeindex.loc[date_obj].index.values[0]
+            idx_start = date_idx - in_seq_len
+            df_timeseries_range_in = df_timeseries_datetimeindex[idx_start:date_idx]
+            df_timeseries_range_in.reset_index(inplace=True)
+            if in_features is not None:
+                df_timeseries_range_in = df_timeseries_range_in[in_features]
+            tensor_timeseries_range_in = tf.convert_to_tensor(df_timeseries_range_in)
+            yield ((image, tensor_timeseries_range_in), label)
+
+
+            # end_date = dt.datetime.strptime(date.numpy().decode('utf8'), datetime_format)
+            # start_date = end_date - dt.timedelta(**timedelta_dict)
+            # df_timeseries_range = df_timeseries_datetimeindex.loc[start_date:end_date].iloc[:-1] # Exclude the last one. WARNING: this assumes that the end timestamp is in the dataset.
+            # df_timeseries_range.reset_index(inplace=True)
+            # if features is not None:
+            #     df_timeseries_range = df_timeseries_range[features]
+            # tensor_timeseries_range = tf.convert_to_tensor(df_timeseries_range)
+            # yield ((image, tensor_timeseries_range), label)
 
     ds_fused = tf.data.Dataset.from_generator(
         gen,
@@ -50,8 +64,8 @@ def load_data(
     timeseries_path: str,
     timeseries_reserve_offset_index: int,
     timeseries_datetime_column: str,
-    timeseries_features: list[str],
-    timeseries_timedelta_dict: dict,
+    timeseries_features_in: list[str],
+    timeseries_seq_len_in: dict,
     image_shape: list[int, int, int],
     split: list[float, float, float],
     shuffle_files: bool,
@@ -89,10 +103,10 @@ def load_data(
 
     # Normalize the time-series data.
     if norm:
-        mean = df_timeseries_tuple[0][timeseries_features].mean()
-        std = df_timeseries_tuple[0][timeseries_features].std()
+        mean = df_timeseries_tuple[0][timeseries_features_in].mean()
+        std = df_timeseries_tuple[0][timeseries_features_in].std()
         for i, df in enumerate(df_timeseries_tuple):
-            df_timeseries_tuple[i][timeseries_features] = (df_timeseries_tuple[i][timeseries_features] - mean)/std
+            df_timeseries_tuple[i][timeseries_features_in] = (df_timeseries_tuple[i][timeseries_features_in] - mean)/std
 
     # Fuse weather data for each split.
     ds_fused_out = []
@@ -114,8 +128,8 @@ def load_data(
         ds_fused = fuse_dated_images_timeseries(
             ds_images_dates=ds_images_dates, 
             df_timeseries=df_timeseries_tuple[i],
-            timedelta_dict=timeseries_timedelta_dict,
-            features=timeseries_features,
+            in_seq_len=timeseries_seq_len_in,
+            in_features=timeseries_features_in,
         )
 
         # Augment the images.
