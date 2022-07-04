@@ -9,7 +9,7 @@ dataset:
       hours: 24
     timeseries_reserve_offset_index: &ID_seq_len 24 # length of timedelta
     image_shape: &ID_image_shape [72,72,3]
-    split: ['train[0%:70%]', 'train[70%:90%]', 'train[90%:]']
+    split: [0.7,0.2,0.1]
     shuffle_files: False
 
 # Model definition.
