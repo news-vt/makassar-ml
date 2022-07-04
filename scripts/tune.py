@@ -284,29 +284,35 @@ def main(
         n_hist = len(allhist)
         color = plt.cm.rainbow(np.linspace(0, 1, n_hist))
         for key in metric_keys_base:
-            fig = plt.figure(figsize=(8,6))
-            for i, (h, c) in enumerate(zip(allhist, color)):
-                plt.plot(h[key], label=f"model {i} train", color=c, linestyle='-')
-                plt.xlim(0, len(h[key])-1)
-            plt.xlabel('epoch')
-            plt.ylabel(key)
-            plt.legend(loc='center left', ncol=max(n_hist//16, 1), bbox_to_anchor=(1.04,0.5))
-            path = Path(config['roots']['image_root'])/f"tuned_{config['model']['name']}_metric_{key}_all_train.png"
-            fig.savefig(path, bbox_inches='tight')
-            logger.info(path)
-            # fig.show()
 
-            fig = plt.figure(figsize=(8,6))
+            # Create figure.
+            fig, ax = plt.subplots(nrows=1, ncols=2, sharey=True, figsize=(15,7), constrained_layout=True)
+
             for i, (h, c) in enumerate(zip(allhist, color)):
-                plt.plot(h[f'val_{key}'], label=f"model {i} val", color=c, linestyle='-')
-                plt.xlim(0, len(h[key])-1)
-            plt.xlabel('epoch')
-            plt.ylabel(key)
-            plt.legend(loc='center left', ncol=max(n_hist//16, 1), bbox_to_anchor=(1.04,0.5))
-            path = Path(config['roots']['image_root'])/f"tuned_{config['model']['name']}_metric_{key}_all_val.png"
+                # Train.
+                ax[0].plot(h[key], label=f"model {i}", color=c, linestyle='-')
+                ax[0].set_xlim(0, len(h[key])-1)
+                ax[0].set_xlabel('epoch')
+                ax[0].set_ylabel(key)
+                ax[0].set_title('Training')
+
+                # Val.
+                ax[1].plot(h[f'val_{key}'], label=f"model {i}", color=c, linestyle='-')
+                ax[1].set_xlim(0, len(h[key])-1)
+                ax[1].set_xlabel('epoch')
+                ax[1].set_title('Validation')
+
+            handles, labels = ax[0].get_legend_handles_labels()
+            # fig.legend(handles, labels, loc='center left', ncol=max(n_hist//16, 1), bbox_to_anchor=(1.0,0.5))
+            fig.legend(handles, labels, loc='upper center', ncol=9, bbox_to_anchor=(0.5,0.0))
+
+            path = Path(config['roots']['image_root'])/f"tuned_{config['model']['name']}_metric_{key}_all.png"
             fig.savefig(path, bbox_inches='tight')
             logger.info(path)
-            # fig.show()
+
+        ###### ------------
+
+
 
         # # Load the data in dataframe form.
         # df_train, df_val, df_test = ml.datasets.beijingpm25.load_beijingpm25_df(
