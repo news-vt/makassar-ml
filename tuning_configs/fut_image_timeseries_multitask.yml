@@ -11,7 +11,7 @@ dataset:
     timeseries_reserve_offset_index_in: *ID_seq_len_in
     timeseries_reserve_offset_index_out: *ID_seq_len_out
     image_shape: &ID_image_shape [72,72,3]
-    split: ['train[0%:70%]', 'train[70%:90%]', 'train[90%:]']
+    split: [0.7,0.2,0.1]
     shuffle_files: False
 
 # Model definition.
@@ -66,6 +66,11 @@ train:
               initial_learning_rate: 1.0e-3
               decay_steps: 4470
               alpha: 0.1
+          - CosineDecayRestarts:
+              initial_learning_rate: 1.0e-3
+              first_decay_steps: 1490 # 4470/3
+              alpha: 0.1
+              m_mul: 0.8
 
   # Compile parameters.
   compile:
