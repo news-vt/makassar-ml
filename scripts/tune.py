@@ -267,7 +267,7 @@ def main(
 
     # Export the parameters to LaTeX.
     table_header = ['model']
-    table_header.extend(sorted(set(df.keys()) - set(metric_keys)))
+    table_header.extend(sorted(set(df.keys()) - set(metric_keys) - set(table_header)))
     latex_df = df[table_header].sort_values(by='model', ascending=True)
     latex_df.columns = latex_df.columns.map(lambda x: x.replace('_', '\_')) # Escape the header names too.
     styler = latex_df.style
