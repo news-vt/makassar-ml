@@ -270,45 +270,97 @@ def main(
 
     if not no_plot:
 
-        # raw_keys = [key for key in metric_keys if not (key.startswith('val_') or key.startswith('test_'))]
-
         # Plot train/val performance for best model.
-        for key in metric_keys_base:
-            fig = ml.visualization.plot_metric(hist, key)
-            path = Path(config['roots']['image_root'])/f"tuned_{config['model']['name']}_metric_{key}_best.png"
-            fig.savefig(path, bbox_inches='tight')
-            logger.info(path)
+        # fig, ax = plt.subplots(nrows=1, ncols=len(metric_keys_base), figsize=(15,7), constrained_layout=True)
+        # fig, ax = plt.subplots(nrows=len(metric_keys_base), ncols=1, figsize=(15,12), sharex=True, constrained_layout=True)
+        fig, ax = plt.subplots(nrows=len(metric_keys_base), ncols=1, figsize=(10,len(metric_keys_base)*3), sharex=True, constrained_layout=True)
+        for j, key in enumerate(sorted(metric_keys_base)):
+            ax[j].plot(hist[key], label='train')
+            ax[j].plot(hist[f"val_{key}"], label='val')
+            ax[j].set_xlim(0, len(hist[key])-1)
+            if j == len(metric_keys_base)-1:
+                ax[j].set_xlabel('epoch')
+            ax[j].set_ylabel(key)
+            # ax[j].legend(loc='upper left')
+
+        handles, labels = ax[0].get_legend_handles_labels()
+        fig.legend(handles, labels, loc='upper center', ncol=2, bbox_to_anchor=(0.5,0.0))
+        path = Path(config['roots']['image_root'])/f"tuned_{config['model']['name']}_metric_best.png"
+        fig.savefig(path, bbox_inches='tight')
+        logger.info(path)
             # fig.show()
+
+        # # Plot train/val performance for best model.
+        # for key in metric_keys_base:
+        #     fig = ml.visualization.plot_metric(hist, key)
+        #     path = Path(config['roots']['image_root'])/f"tuned_{config['model']['name']}_metric_{key}_best.png"
+        #     fig.savefig(path, bbox_inches='tight')
+        #     logger.info(path)
+        #     # fig.show()
 
         # Plot train/val/test metrics for all models.
         n_hist = len(allhist)
         color = plt.cm.rainbow(np.linspace(0, 1, n_hist))
-        for key in metric_keys_base:
-
-            # Create figure.
-            fig, ax = plt.subplots(nrows=1, ncols=2, sharey=True, figsize=(15,7), constrained_layout=True)
-
+        # fig, ax = plt.subplots(nrows=len(metric_keys_base), ncols=2, sharey=True, sharex=True, figsize=(15,7), constrained_layout=True)
+        # fig, ax = plt.subplots(nrows=len(metric_keys_base), ncols=2, figsize=(15,12), sharex=True, constrained_layout=True)
+        fig, ax = plt.subplots(nrows=len(metric_keys_base), ncols=2, figsize=(15,len(metric_keys_base)*3), sharex=True, constrained_layout=True)
+        for j, key in enumerate(sorted(metric_keys_base)):
             for i, (h, c) in enumerate(zip(allhist, color)):
                 # Train.
-                ax[0].plot(h[key], label=f"model {i}", color=c, linestyle='-')
-                ax[0].set_xlim(0, len(h[key])-1)
-                ax[0].set_xlabel('epoch')
-                ax[0].set_ylabel(key)
-                ax[0].set_title('Training')
+                ax[j,0].plot(h[key], label=f"model {i}", color=c, linestyle='-')
+                ax[j,0].set_xlim(0, len(h[key])-1)
+                if j == len(metric_keys_base)-1:
+                    ax[j,0].set_xlabel('epoch')
+                ax[j,0].set_ylabel(key)
+                if j == 0:
+                    ax[j,0].set_title('Training')
 
                 # Val.
-                ax[1].plot(h[f'val_{key}'], label=f"model {i}", color=c, linestyle='-')
-                ax[1].set_xlim(0, len(h[key])-1)
-                ax[1].set_xlabel('epoch')
-                ax[1].set_title('Validation')
+                ax[j,1].plot(h[f'val_{key}'], label=f"model {i}", color=c, linestyle='-')
+                ax[j,1].set_xlim(0, len(h[key])-1)
+                if j == len(metric_keys_base)-1:
+                    ax[j,1].set_xlabel('epoch')
+                if j == 0:
+                    ax[j,1].set_title('Validation')
 
-            handles, labels = ax[0].get_legend_handles_labels()
-            # fig.legend(handles, labels, loc='center left', ncol=max(n_hist//16, 1), bbox_to_anchor=(1.0,0.5))
-            fig.legend(handles, labels, loc='upper center', ncol=9, bbox_to_anchor=(0.5,0.0))
+        handles, labels = ax[0,0].get_legend_handles_labels()
+        # fig.legend(handles, labels, loc='center left', ncol=max(n_hist//16, 1), bbox_to_anchor=(1.0,0.5))
+        fig.legend(handles, labels, loc='upper center', ncol=9, bbox_to_anchor=(0.5,0.0))
 
-            path = Path(config['roots']['image_root'])/f"tuned_{config['model']['name']}_metric_{key}_all.png"
-            fig.savefig(path, bbox_inches='tight')
-            logger.info(path)
+        path = Path(config['roots']['image_root'])/f"tuned_{config['model']['name']}_metric_all.png"
+        fig.savefig(path, bbox_inches='tight')
+        logger.info(path)
+
+
+        # # Plot train/val/test metrics for all models.
+        # n_hist = len(allhist)
+        # color = plt.cm.rainbow(np.linspace(0, 1, n_hist))
+        # for key in metric_keys_base:
+
+        #     # Create figure.
+        #     fig, ax = plt.subplots(nrows=1, ncols=2, sharey=True, figsize=(15,7), constrained_layout=True)
+
+        #     for i, (h, c) in enumerate(zip(allhist, color)):
+        #         # Train.
+        #         ax[0].plot(h[key], label=f"model {i}", color=c, linestyle='-')
+        #         ax[0].set_xlim(0, len(h[key])-1)
+        #         ax[0].set_xlabel('epoch')
+        #         ax[0].set_ylabel(key)
+        #         ax[0].set_title('Training')
+
+        #         # Val.
+        #         ax[1].plot(h[f'val_{key}'], label=f"model {i}", color=c, linestyle='-')
+        #         ax[1].set_xlim(0, len(h[key])-1)
+        #         ax[1].set_xlabel('epoch')
+        #         ax[1].set_title('Validation')
+
+        #     handles, labels = ax[0].get_legend_handles_labels()
+        #     # fig.legend(handles, labels, loc='center left', ncol=max(n_hist//16, 1), bbox_to_anchor=(1.0,0.5))
+        #     fig.legend(handles, labels, loc='upper center', ncol=9, bbox_to_anchor=(0.5,0.0))
+
+        #     path = Path(config['roots']['image_root'])/f"tuned_{config['model']['name']}_metric_{key}_all.png"
+        #     fig.savefig(path, bbox_inches='tight')
+        #     logger.info(path)
 
         ###### ------------
 
