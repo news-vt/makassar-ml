@@ -4,10 +4,9 @@ dataset:
   parameters:
     timeseries_path: ${HOME}/research/makassar/datasets/beijing_pm25
     timeseries_datetime_column: 'datetime'
-    timeseries_features: &ID_timeseries_features ['TEMP','DEWP','PRES','Iws']
-    timeseries_timedelta_dict: 
-      hours: 24
-    timeseries_reserve_offset_index: &ID_seq_len 24 # length of timedelta
+    timeseries_features_in: &ID_timeseries_features_in ['TEMP','DEWP','PRES','Iws']
+    timeseries_seq_len_in: &ID_seq_len_in 24
+    timeseries_reserve_offset_index: *ID_seq_len_in # length of timedelta
     image_shape: &ID_image_shape [72,72,3]
     split: [0.7,0.2,0.1]
     shuffle_files: False
@@ -17,7 +16,7 @@ model:
   name: FuT_image_timeseries_classifier
   parameters:
     image_shape: *ID_image_shape
-    seq_shape: [*ID_seq_len, !len [*ID_timeseries_features]] # (seq,feat)
+    seq_shape: [*ID_seq_len_in, !len [*ID_timeseries_features_in]] # (seq,feat)
     n_class: 38
     patch_size: 6
     image_embed_dim: 
