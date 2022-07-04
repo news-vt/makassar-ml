@@ -1,5 +1,6 @@
 from __future__ import annotations
 import datetime as dt
+import numpy as np
 import pandas as pd
 import tensorflow as tf
 import tensorflow_datasets as tfds
@@ -73,7 +74,7 @@ def load_data(
     timeseries_seq_len_in: dict,
     timeseries_seq_len_out: dict,
     image_shape: list[int, int, int],
-    split: list[str, str, str],
+    split: list[float, float, float],
     shuffle_files: bool,
     batch_size: int,
     with_info: bool = False,
@@ -81,30 +82,39 @@ def load_data(
     ) -> tuple[tf.data.Dataset,tf.data.Dataset,tf.data.Dataset]:
 
     assert len(split) == 3
-    assert all(isinstance(item, str) for item in split)
+    assert all(isinstance(item, float) for item in split)
+    assert np.isclose(sum(split), 1.0)
 
     # Load image dataset.
-    # ds_images_train, ds_images_val, ds_images_test = tfds.load(
+    split_images = [
+        f"train[0%:{int(split[0]*100)}%]",
+        f"train[{int(split[0]*100)}%:{100-int(split[-1]*100)}%]",
+        f"train[{100-int(split[-1]*100)}%:]",
+    ]
     ds_images_tuple, info = tfds.load(
         name='plant_village',
-        split=split,
+        split=split_images,
         shuffle_files=shuffle_files,
         as_supervised=True,
         with_info=True,
     )
 
     # Load weather dataset.
-    df_timeseries = load_beijingpm25_df(
+    df_timeseries_tuple = load_beijingpm25_df(
         path=timeseries_path,
+        split=split,
     )
-    df_timeseries.dropna(inplace=True) # Remove NaN.
+    for df in df_timeseries_tuple:
+        df.dropna(inplace=True) # Remove NaN.
+        df.reset_index(inplace=True)
 
     # Normalize the time-series data.
     if norm:
         normed_featured = list(set(timeseries_features_in + timeseries_features_out))
-        mean = df_timeseries[normed_featured].mean()
-        std = df_timeseries[normed_featured].std()
-        df_timeseries[normed_featured] = (df_timeseries[normed_featured] - mean)/std
+        mean = df_timeseries_tuple[0][normed_featured].mean()
+        std = df_timeseries_tuple[0][normed_featured].std()
+        for i, df in enumerate(df_timeseries_tuple):
+            df_timeseries_tuple[i][normed_featured] = (df_timeseries_tuple[i][normed_featured] - mean)/std
 
     # Fuse weather data for each split.
     ds_fused_out = []
@@ -112,7 +122,7 @@ def load_data(
 
         # Randomly select dates to associate with each element.
         n_images = int(ds_images_tuple[i].cardinality())
-        random_dates = df_timeseries.iloc[timeseries_reserve_offset_index_in:-timeseries_reserve_offset_index_out].sample(n=n_images, replace=True)[timeseries_datetime_column]
+        random_dates = df_timeseries_tuple[i].iloc[timeseries_reserve_offset_index_in:-timeseries_reserve_offset_index_out].sample(n=n_images, replace=True)[timeseries_datetime_column]
 
         # Fuse images with dates.
         ds_images_dates = tf.data.Dataset.zip(
@@ -125,7 +135,7 @@ def load_data(
         # Returns ((image, timeseries_in), timeseries_out)
         ds_fused = fuse_dated_images_timeseries(
             ds_images_dates=ds_images_dates, 
-            df_timeseries=df_timeseries,
+            df_timeseries=df_timeseries_tuple[i],
             in_seq_len=timeseries_seq_len_in,
             out_seq_len=timeseries_seq_len_out,
             in_features=timeseries_features_in,
