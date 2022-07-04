@@ -221,18 +221,17 @@ def main(
 
     logger.info(f"Tuning Results:")
 
-    # Build the resulting table header.
-    table_header = ['model'] + metric_keys
-    table_header.extend(set(df.keys()) - set(table_header))
-
     # Log results as CSV to console and a file.
+    table_header = ['model'] + metric_keys
+    table_header.extend(sorted(set(df.keys()) - set(table_header)))
     csv_df = df[table_header].sort_values(by='val_loss', ascending=True)
     logger.info(csv_df.to_string(index=False))
     csv_path = Path(config['roots']['hp_tuning_root'])/config['model']['name']/f"tuning_results.csv"
     csv_df.to_csv(csv_path, index=False)
     logger.info(csv_path)
 
-    # Export the dataframe to LaTeX using custom style.
+    # Export the performance results to LaTeX.
+    table_header = ['model'] + metric_keys
     latex_df = df[table_header].sort_values(by='val_loss', ascending=True)
     latex_df.columns = latex_df.columns.map(lambda x: x.replace('_', '\_')) # Escape the header names too.
     styler = latex_df.style
@@ -260,6 +259,26 @@ def main(
     styler.to_latex(
         buf=latex_path,
         hrules=True,
+        label=latex_path.stem,
+        **config.get('latex_table_results', {}),
+    )
+    latex_df.columns = latex_df.columns.map(lambda x: x.replace('\_', '_')) # Convert header names back.
+    logger.info(latex_path)
+
+    # Export the parameters to LaTeX.
+    table_header = ['model']
+    table_header.extend(sorted(set(df.keys()) - set(metric_keys)))
+    latex_df = df[table_header].sort_values(by='model', ascending=True)
+    latex_df.columns = latex_df.columns.map(lambda x: x.replace('_', '\_')) # Escape the header names too.
+    styler = latex_df.style
+    styler = styler.format(str, escape='latex') # Default is to convert all cells to their string representation.
+    styler = styler.hide(axis=0) # Hide the index.
+    latex_path = Path(config['roots']['table_root'])/f"{config['model']['name']}_tuning_parameters.tex"
+    styler.to_latex(
+        buf=latex_path,
+        hrules=True,
+        label=latex_path.stem,
+        **config.get('latex_table_parameters', {}),
     )
     latex_df.columns = latex_df.columns.map(lambda x: x.replace('\_', '_')) # Convert header names back.
     logger.info(latex_path)
