@@ -259,7 +259,7 @@ def main(
     styler.to_latex(
         buf=latex_path,
         hrules=True,
-        label=latex_path.stem,
+        label=f"tab:{latex_path.stem}",
         **config.get('latex_table_results', {}),
     )
     latex_df.columns = latex_df.columns.map(lambda x: x.replace('\_', '_')) # Convert header names back.
@@ -277,7 +277,7 @@ def main(
     styler.to_latex(
         buf=latex_path,
         hrules=True,
-        label=latex_path.stem,
+        label=f"tab:{latex_path.stem}",
         **config.get('latex_table_parameters', {}),
     )
     latex_df.columns = latex_df.columns.map(lambda x: x.replace('\_', '_')) # Convert header names back.
