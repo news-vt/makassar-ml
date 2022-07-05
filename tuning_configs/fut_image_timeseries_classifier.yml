@@ -72,6 +72,16 @@ train:
     loss: sparse_categorical_crossentropy
     metrics: ['accuracy']
 
+# LaTeX table parameters.
+latex_table_results:
+  environment: "longtable"
+  caption: "Tuned \\ac{fut} single-head classifier performance on fusion dataset. Rows are sorted by column $val\\_loss$ in ascending order to highlight best-performing models. Minimum performance values are highlighted in \\textbf{bold}."
+  position: "hbt"
+latex_table_parameters:
+  environment: "longtable"
+  caption: "Tuned \\ac{fut} single-head classifier model parameters. Rows are sorted by column $model$ in ascending order."
+  position: "hbt"
+
 # Root directory paths.
 roots:
   project_root: &ID_project_root ${HOME}/research/makassar/
