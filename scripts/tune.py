@@ -386,48 +386,6 @@ def main(
         )
 
 
-#     # Export the parameters to LaTeX.
-#     table_header = ['model']
-#     table_header.extend(sorted(set(df.keys()) - set(metric_keys) - set(table_header)))
-#     latex_df = df[table_header].sort_values(by='model', ascending=True)
-#     latex_df.columns = latex_df.columns.map(lambda x: x.replace('_', '\_')) # Escape the header names too.
-#     styler = latex_df.style
-#     styler = styler.format(str, escape='latex') # Default is to convert all cells to their string representation.
-#     def latex_lr_formatter(val) -> str:
-#         # if isinstance(val, (int, float)):
-#         #     # return f"{val:.4f}"
-#         #     return f"{val:.4f}"
-#         if isinstance(val, dict):
-#             name = list(val.keys())[0]
-#             return name
-#             # s = ', '.join([f"{k}={v}" for k,v in val[name].items()])
-#             # return f"${name}({s})$".replace('_', '\_')
-#         else:
-#             return str(val)
-#     styler = styler.format(
-#         formatter=latex_lr_formatter,
-#         subset=[key for key in table_header if key == 'lr' or key == 'learning_rate'],
-#     )
-#     styler = styler.hide(axis=0) # Hide the index.
-#     latex_path = Path(config['roots']['table_root'])/f"{config['model']['name']}_tuning_parameters.tex"
-#     latex_string = styler.to_latex(
-#         # buf=latex_path,
-#         hrules=True,
-#         label=f"tab:{latex_path.stem}",
-#         **config.get('latex_table_parameters', {}),
-#     )
-#     if 'longtable' in latex_string:
-#         latex_string = f"""
-# \\begingroup
-# \\renewcommand\\arraystretch{{0.5}}
-# {latex_string}
-# \endgroup
-# """
-#     with open(latex_path, 'w') as f:
-#         f.write(latex_string)
-#     latex_df.columns = latex_df.columns.map(lambda x: x.replace('\_', '_')) # Convert header names back.
-#     logger.info(latex_path)
-
     ###
     # Plotting.
     ###
@@ -435,8 +393,6 @@ def main(
     if not no_plot:
 
         # Plot train/val performance for best model.
-        # fig, ax = plt.subplots(nrows=1, ncols=len(metric_keys_base), figsize=(15,7), constrained_layout=True)
-        # fig, ax = plt.subplots(nrows=len(metric_keys_base), ncols=1, figsize=(15,12), sharex=True, constrained_layout=True)
         fig, ax = plt.subplots(nrows=len(metric_keys_base), ncols=1, figsize=(10,len(metric_keys_base)*3), sharex=True, constrained_layout=True)
         for j, key in enumerate(sorted(metric_keys_base)):
             ax[j].plot(hist[key], label='train')
@@ -454,20 +410,11 @@ def main(
         logger.info(path)
             # fig.show()
 
-        # # Plot train/val performance for best model.
-        # for key in metric_keys_base:
-        #     fig = ml.visualization.plot_metric(hist, key)
-        #     path = Path(config['roots']['image_root'])/f"tuned_{config['model']['name']}_metric_{key}_best.png"
-        #     fig.savefig(path, bbox_inches='tight')
-        #     logger.info(path)
-        #     # fig.show()
 
         # Plot train/val/test metrics for all models.
         n_hist = len(allhist)
         color = plt.cm.rainbow(np.linspace(0, 1, n_hist))
-        # fig, ax = plt.subplots(nrows=len(metric_keys_base), ncols=2, sharey=True, sharex=True, figsize=(15,7), constrained_layout=True)
-        # fig, ax = plt.subplots(nrows=len(metric_keys_base), ncols=2, figsize=(15,12), sharex=True, constrained_layout=True)
-        fig, ax = plt.subplots(nrows=len(metric_keys_base), ncols=2, figsize=(15,len(metric_keys_base)*3), sharex=True, constrained_layout=True)
+        fig, ax = plt.subplots(nrows=len(metric_keys_base), ncols=2, figsize=(15,len(metric_keys_base)*3), sharex='col', sharey='row', constrained_layout=True)
         for j, key in enumerate(sorted(metric_keys_base)):
             for i, (h, c) in enumerate(zip(allhist, color)):
                 # Train.
@@ -494,95 +441,6 @@ def main(
         path = Path(config['roots']['image_root'])/f"tuned_{config['model']['name']}_metric_all.png"
         fig.savefig(path, bbox_inches='tight')
         logger.info(path)
-
-
-        # # Plot train/val/test metrics for all models.
-        # n_hist = len(allhist)
-        # color = plt.cm.rainbow(np.linspace(0, 1, n_hist))
-        # for key in metric_keys_base:
-
-        #     # Create figure.
-        #     fig, ax = plt.subplots(nrows=1, ncols=2, sharey=True, figsize=(15,7), constrained_layout=True)
-
-        #     for i, (h, c) in enumerate(zip(allhist, color)):
-        #         # Train.
-        #         ax[0].plot(h[key], label=f"model {i}", color=c, linestyle='-')
-        #         ax[0].set_xlim(0, len(h[key])-1)
-        #         ax[0].set_xlabel('epoch')
-        #         ax[0].set_ylabel(key)
-        #         ax[0].set_title('Training')
-
-        #         # Val.
-        #         ax[1].plot(h[f'val_{key}'], label=f"model {i}", color=c, linestyle='-')
-        #         ax[1].set_xlim(0, len(h[key])-1)
-        #         ax[1].set_xlabel('epoch')
-        #         ax[1].set_title('Validation')
-
-        #     handles, labels = ax[0].get_legend_handles_labels()
-        #     # fig.legend(handles, labels, loc='center left', ncol=max(n_hist//16, 1), bbox_to_anchor=(1.0,0.5))
-        #     fig.legend(handles, labels, loc='upper center', ncol=9, bbox_to_anchor=(0.5,0.0))
-
-        #     path = Path(config['roots']['image_root'])/f"tuned_{config['model']['name']}_metric_{key}_all.png"
-        #     fig.savefig(path, bbox_inches='tight')
-        #     logger.info(path)
-
-        ###### ------------
-
-
-
-        # # Load the data in dataframe form.
-        # df_train, df_val, df_test = ml.datasets.beijingpm25.load_beijingpm25_df(
-        #     split=config['dataset']['parameters']['split'],
-        #     path=config['dataset']['parameters']['path'],
-        # )
-        # # Load the data in dataset form.
-        # dataset_train, dataset_val, dataset_test = dataset_loader_func(config['train']['batch_size'])
-        # # Data keys.
-        # keys = [
-        #     'year',
-        #     'month',
-        #     'day',
-        #     'hour',
-        #     'pm2.5',
-        #     'DEWP',
-        #     'TEMP',
-        #     'PRES',
-        #     'Iws',
-        #     'Is',
-        #     'Ir',
-        # ]
-        # # Normalize specific keys.
-        # train_mean = df_train[keys].mean()
-        # train_std = df_train[keys].std()
-        # df_train[keys] = (df_train[keys] - train_mean)/train_std
-        # df_val[keys] = (df_val[keys] - train_mean)/train_std
-        # df_test[keys] = (df_test[keys] - train_mean)/train_std
-        # # Evaluate the model on the train/val/test data.
-        # train_pred = model.predict(dataset_train)
-        # val_pred = model.predict(dataset_val)
-        # test_pred = model.predict(dataset_test)
-        # # Plot the model predictions of the dataset.
-        # # Create figure for each data set.
-        # figs = {}
-        # labels = ['train', 'val', 'test']
-        # for l, label in enumerate(labels):
-        #     fig = ml.visualization.plot_input_output(
-        #         df=locals()[f"df_{label}"],
-        #         pred=locals()[f"{label}_pred"],
-        #         in_seq_len=config['dataset']['parameters']['in_seq_len'],
-        #         out_seq_len=config['dataset']['parameters']['out_seq_len'],
-        #         shift=config['dataset']['parameters']['shift'],
-        #         in_feat=config['dataset']['parameters']['in_feat'],
-        #         out_feat=config['dataset']['parameters']['out_feat'],
-        #         x_key='datetime',
-        #     )
-        #     # fig.suptitle(f"{label[0].upper()}{label[1:]} Data", fontsize='xx-large')
-        #     figs[label] = fig
-        # for name, fig in figs.items():
-        #     path = Path(config['roots']['image_root'])/f"tuned_{config['model']['name']}_io_{name}.png"
-        #     fig.savefig(path, bbox_inches='tight')
-        #     logger.info(f"{path}")
-        #     # fig.show()
 
 
 if __name__ == '__main__':
