@@ -256,12 +256,21 @@ def main(
         )
     styler = styler.hide(axis=0) # Hide the index.
     latex_path = Path(config['roots']['table_root'])/f"{config['model']['name']}_tuning_results.tex"
-    styler.to_latex(
-        buf=latex_path,
+    latex_string = styler.to_latex(
+        # buf=latex_path,
         hrules=True,
         label=f"tab:{latex_path.stem}",
         **config.get('latex_table_results', {}),
     )
+    if 'longtable' in latex_string:
+        latex_string = f"""
+\\begingroup
+\\renewcommand\\arraystretch{{0.5}}
+{latex_string}
+\endgroup
+"""
+    with open(latex_path, 'w') as f:
+        f.write(latex_string)
     latex_df.columns = latex_df.columns.map(lambda x: x.replace('\_', '_')) # Convert header names back.
     logger.info(latex_path)
 
@@ -272,14 +281,38 @@ def main(
     latex_df.columns = latex_df.columns.map(lambda x: x.replace('_', '\_')) # Escape the header names too.
     styler = latex_df.style
     styler = styler.format(str, escape='latex') # Default is to convert all cells to their string representation.
+    def latex_lr_formatter(val) -> str:
+        # if isinstance(val, (int, float)):
+        #     # return f"{val:.4f}"
+        #     return f"{val:.4f}"
+        if isinstance(val, dict):
+            name = list(val.keys())[0]
+            return name
+            # s = ', '.join([f"{k}={v}" for k,v in val[name].items()])
+            # return f"${name}({s})$".replace('_', '\_')
+        else:
+            return str(val)
+    styler = styler.format(
+        formatter=latex_lr_formatter,
+        subset=[key for key in table_header if key == 'lr' or key == 'learning_rate'],
+    )
     styler = styler.hide(axis=0) # Hide the index.
     latex_path = Path(config['roots']['table_root'])/f"{config['model']['name']}_tuning_parameters.tex"
-    styler.to_latex(
-        buf=latex_path,
+    latex_string = styler.to_latex(
+        # buf=latex_path,
         hrules=True,
         label=f"tab:{latex_path.stem}",
         **config.get('latex_table_parameters', {}),
     )
+    if 'longtable' in latex_string:
+        latex_string = f"""
+\\begingroup
+\\renewcommand\\arraystretch{{0.5}}
+{latex_string}
+\endgroup
+"""
+    with open(latex_path, 'w') as f:
+        f.write(latex_string)
     latex_df.columns = latex_df.columns.map(lambda x: x.replace('\_', '_')) # Convert header names back.
     logger.info(latex_path)
 
