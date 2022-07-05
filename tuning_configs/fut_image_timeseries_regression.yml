@@ -78,12 +78,19 @@ train:
 # LaTeX table parameters.
 latex_table_results:
   environment: "longtable"
-  caption: "Tuned \\ac{fut} single-head regression performance on fusion dataset. Rows are sorted by column $val\\_loss$ in ascending order to highlight best-performing models. Minimum performance values are highlighted in \\textbf{bold}."
+  caption: "Tuned \\ac{fut} single-head regression performance on fusion dataset. Rows are sorted by column $val\\_loss$ in ascending order to highlight best-performing models. Best performance values for each column are highlighted in \\textbf{bold}."
   position: "hbt"
+  sort_values:
+    by: 'val_loss'
+    ascending: True
 latex_table_parameters:
   environment: "longtable"
   caption: "Tuned \\ac{fut} single-head regression model parameters. Rows are sorted by column $model$ in ascending order."
   position: "hbt"
+  header: [model, dropout, ff_dim, fusion_embed_dim, image_embed_dim, lr, n_encoders, n_heads, patch_size, seq_embed_dim]
+  sort_values:
+    by: 'model'
+    ascending: True
 
 # Root directory paths.
 roots:

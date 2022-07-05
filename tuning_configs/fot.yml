@@ -87,12 +87,19 @@ train:
 # LaTeX table parameters.
 latex_table_results:
   environment: "longtable"
-  caption: "Tuned \\ac{fot} performance on Beijing PM2.5 dataset. Rows are sorted by column $val\\_loss$ in ascending order to highlight best-performing models. Minimum performance values are highlighted in \\textbf{bold}."
+  caption: "Tuned \\ac{fot} performance on Beijing PM2.5 dataset. Rows are sorted by column $val\\_loss$ in ascending order to highlight best-performing models. Best performance values for each column are highlighted in \\textbf{bold}."
   position: "hbt"
+  sort_values:
+    by: 'val_loss'
+    ascending: True
 latex_table_parameters:
   environment: "longtable"
   caption: "Tuned \\ac{fot} model parameters. Rows are sorted by column $model$ in ascending order."
   position: "hbt"
+  header: [model, dropout, embed_dim, ff_dim, lr, n_encoders, n_heads]
+  sort_values:
+    by: 'model'
+    ascending: True
 
 
 # Root directory paths.

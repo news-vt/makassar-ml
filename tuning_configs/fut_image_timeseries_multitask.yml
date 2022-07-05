@@ -83,13 +83,36 @@ train:
 
 # LaTeX table parameters.
 latex_table_results:
-  environment: "longtable"
-  caption: "Tuned \\ac{fut} multi-task performance on fusion dataset. Rows are sorted by column $val\\_loss$ in ascending order to highlight best-performing models. Minimum performance values are highlighted in \\textbf{bold}."
-  position: "hbt"
+  - environment: "longtable"
+    caption: "Tuned \\ac{fut} multi-task performance on fusion dataset. Rows are sorted by column $loss$ in ascending order to highlight best-performing models. Best performance values for each column are highlighted in \\textbf{bold}."
+    position: "hbt"
+    header: ['model', 'loss', 'regressor_loss', 'classifier_loss', 'classifier_accuracy', 'regressor_mae', 'regressor_mape']
+    sort_values:
+      by: 'loss'
+      ascending: True
+  - environment: "longtable"
+    caption: "Tuned \\ac{fut} multi-task performance on fusion dataset. Rows are sorted by column $val\\_loss$ in ascending order to highlight best-performing models. Best performance values for each column are highlighted in \\textbf{bold}."
+    position: "hbt"
+    header: ['model', 'val_loss', 'val_regressor_loss', 'val_classifier_loss', 'val_classifier_accuracy', 'val_regressor_mae', 'val_regressor_mape']
+    sort_values:
+      by: 'val_loss'
+      ascending: True
+  - environment: "longtable"
+    caption: "Tuned \\ac{fut} multi-task performance on fusion dataset. Rows are sorted by column $test\\_loss$ in ascending order to highlight best-performing models. Best performance values for each column are highlighted in \\textbf{bold}."
+    position: "hbt"
+    header: ['model', 'test_loss', 'test_regressor_loss', 'test_classifier_loss', 'test_classifier_accuracy', 'test_regressor_mae', 'test_regressor_mape']
+    sort_values:
+      by: 'test_loss'
+      ascending: True
 latex_table_parameters:
   environment: "longtable"
   caption: "Tuned \\ac{fut} multi-task model parameters. Rows are sorted by column $model$ in ascending order."
   position: "hbt"
+  header: [model, dropout, ff_dim, fusion_embed_dim, image_embed_dim, lr, n_encoders, n_heads, patch_size, seq_embed_dim]
+  # header: [model, dropout, fc_units, ff_dim, fusion_embed_dim, image_embed_dim, image_shape, in_seq_shape, lr, n_class, n_encoders, n_heads, optimizer, out_seq_shape, patch_size, seq_embed_dim]
+  sort_values:
+    by: 'model'
+    ascending: True
 
 # Root directory paths.
 roots:
