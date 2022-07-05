@@ -17,6 +17,7 @@ import logging
 import makassar_ml as ml
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import seaborn as sns
 import shutil
 import tensorflow as tf
@@ -81,6 +82,119 @@ def get_opts() -> argparse.Namespace:
     )
     opts = parser.parse_args()
     return opts
+
+
+def build_latex_tuning_results(
+    latex_config: dict,
+    df: pd.DataFrame,
+    metric_keys: list,
+    latex_path: Path,
+    ):
+    
+    if 'header' in latex_config:
+        table_header = latex_config.pop('header')
+    else:
+        table_header = ['model'] + metric_keys
+    latex_df = df[table_header]
+    if 'sort_values' in latex_config:
+        latex_df = latex_df.sort_values(**latex_config.pop('sort_values', {}))
+    latex_df.columns = latex_df.columns.map(lambda x: x.replace('_', '\_')) # Escape the header names too.
+    styler = latex_df.style
+    styler = styler.format(str, escape='latex') # Default is to convert all cells to their string representation.
+    styler = styler.format(
+        formatter='{:.4f}',
+        subset=[key.replace('_', '\_') for key in metric_keys if key in table_header],
+    )
+    subset = [key.replace('_', '\_') for key in metric_keys if key in table_header and 'accuracy' in key]
+    if len(subset) > 0:
+        styler = styler.highlight_max(
+            subset=subset,
+            axis=0,
+            props='textbf:--rwrap;',
+        )
+    subset = [key.replace('_', '\_') for key in metric_keys if key in table_header and 'accuracy' not in key]
+    if len(subset) > 0:
+        styler = styler.highlight_min(
+            subset=subset, 
+            axis=0,
+            props='textbf:--rwrap;',
+        )
+    styler = styler.hide(axis=0) # Hide the index.
+    # latex_path = Path(config['roots']['table_root'])/f"{config['model']['name']}_tuning_results.tex"
+    latex_string = styler.to_latex(
+        # buf=latex_path,
+        hrules=True,
+        label=f"tab:{latex_path.stem}",
+        **latex_config,
+    )
+    if 'longtable' in latex_string:
+        latex_string = f"""
+\\begingroup
+\\renewcommand\\arraystretch{{0.5}}
+{latex_string}
+\endgroup
+"""
+    with open(latex_path, 'w') as f:
+        f.write(latex_string)
+    latex_df.columns = latex_df.columns.map(lambda x: x.replace('\_', '_')) # Convert header names back.
+    logger.info(latex_path)
+
+
+def build_latex_tuning_parameters(
+    latex_config: dict,
+    df: pd.DataFrame,
+    metric_keys: list,
+    latex_path: Path,
+    ):
+
+    if 'header' in latex_config:
+        table_header = latex_config.pop('header')
+    else:
+        table_header = ['model']
+        table_header.extend(sorted(set(df.keys()) - set(metric_keys) - set(table_header)))
+    latex_df = df[table_header]
+    if 'sort_values' in latex_config:
+        latex_df = latex_df.sort_values(**latex_config.pop('sort_values', {}))
+    else:
+        latex_df = latex_df.sort_values(by='model', ascending=True)
+
+    latex_df.columns = latex_df.columns.map(lambda x: x.replace('_', '\_')) # Escape the header names too.
+    styler = latex_df.style
+    styler = styler.format(str, escape='latex') # Default is to convert all cells to their string representation.
+    def latex_lr_formatter(val) -> str:
+        # if isinstance(val, (int, float)):
+        #     # return f"{val:.4f}"
+        #     return f"{val:.4f}"
+        if isinstance(val, dict):
+            name = list(val.keys())[0]
+            return name
+            # s = ', '.join([f"{k}={v}" for k,v in val[name].items()])
+            # return f"${name}({s})$".replace('_', '\_')
+        else:
+            return str(val)
+    styler = styler.format(
+        formatter=latex_lr_formatter,
+        subset=[key for key in table_header if key == 'lr' or key == 'learning_rate'],
+    )
+    styler = styler.hide(axis=0) # Hide the index.
+    # latex_path = Path(config['roots']['table_root'])/f"{config['model']['name']}_tuning_parameters.tex"
+    latex_string = styler.to_latex(
+        # buf=latex_path,
+        hrules=True,
+        label=f"tab:{latex_path.stem}",
+        **latex_config,
+    )
+    if 'longtable' in latex_string:
+        latex_string = f"""
+\\begingroup
+\\renewcommand\\arraystretch{{0.5}}
+{latex_string}
+\endgroup
+"""
+    with open(latex_path, 'w') as f:
+        f.write(latex_string)
+    latex_df.columns = latex_df.columns.map(lambda x: x.replace('\_', '_')) # Convert header names back.
+    logger.info(latex_path)
 
 
 def main(
@@ -231,90 +345,88 @@ def main(
     logger.info(csv_path)
 
     # Export the performance results to LaTeX.
-    table_header = ['model'] + metric_keys
-    latex_df = df[table_header].sort_values(by='val_loss', ascending=True)
-    latex_df.columns = latex_df.columns.map(lambda x: x.replace('_', '\_')) # Escape the header names too.
-    styler = latex_df.style
-    styler = styler.format(str, escape='latex') # Default is to convert all cells to their string representation.
-    styler = styler.format(
-        formatter='{:.4f}',
-        subset=[key.replace('_', '\_') for key in metric_keys],
-    )
-    subset = [key.replace('_', '\_') for key in metric_keys if 'accuracy' in key]
-    if len(subset) > 0:
-        styler = styler.highlight_max(
-            subset=subset,
-            axis=0,
-            props='textbf:--rwrap;',
+    latex_config = config.get('latex_table_results', {})
+    if isinstance(latex_config, list):
+        for i, cfg in enumerate(latex_config):
+            latex_path = Path(config['roots']['table_root'])/f"{config['model']['name']}_tuning_results_{i}.tex"
+            build_latex_tuning_results(
+                latex_config=cfg,
+                df=df,
+                metric_keys=metric_keys,
+                latex_path=latex_path,
+            )
+    else:
+        latex_path = Path(config['roots']['table_root'])/f"{config['model']['name']}_tuning_results.tex"
+        build_latex_tuning_results(
+            latex_config=latex_config,
+            df=df,
+            metric_keys=metric_keys,
+            latex_path=latex_path,
         )
-    subset = [key.replace('_', '\_') for key in metric_keys if 'accuracy' not in key]
-    if len(subset) > 0:
-        styler = styler.highlight_min(
-            subset=subset, 
-            axis=0,
-            props='textbf:--rwrap;',
-        )
-    styler = styler.hide(axis=0) # Hide the index.
-    latex_path = Path(config['roots']['table_root'])/f"{config['model']['name']}_tuning_results.tex"
-    latex_string = styler.to_latex(
-        # buf=latex_path,
-        hrules=True,
-        label=f"tab:{latex_path.stem}",
-        **config.get('latex_table_results', {}),
-    )
-    if 'longtable' in latex_string:
-        latex_string = f"""
-\\begingroup
-\\renewcommand\\arraystretch{{0.5}}
-{latex_string}
-\endgroup
-"""
-    with open(latex_path, 'w') as f:
-        f.write(latex_string)
-    latex_df.columns = latex_df.columns.map(lambda x: x.replace('\_', '_')) # Convert header names back.
-    logger.info(latex_path)
+
 
     # Export the parameters to LaTeX.
-    table_header = ['model']
-    table_header.extend(sorted(set(df.keys()) - set(metric_keys) - set(table_header)))
-    latex_df = df[table_header].sort_values(by='model', ascending=True)
-    latex_df.columns = latex_df.columns.map(lambda x: x.replace('_', '\_')) # Escape the header names too.
-    styler = latex_df.style
-    styler = styler.format(str, escape='latex') # Default is to convert all cells to their string representation.
-    def latex_lr_formatter(val) -> str:
-        # if isinstance(val, (int, float)):
-        #     # return f"{val:.4f}"
-        #     return f"{val:.4f}"
-        if isinstance(val, dict):
-            name = list(val.keys())[0]
-            return name
-            # s = ', '.join([f"{k}={v}" for k,v in val[name].items()])
-            # return f"${name}({s})$".replace('_', '\_')
-        else:
-            return str(val)
-    styler = styler.format(
-        formatter=latex_lr_formatter,
-        subset=[key for key in table_header if key == 'lr' or key == 'learning_rate'],
-    )
-    styler = styler.hide(axis=0) # Hide the index.
-    latex_path = Path(config['roots']['table_root'])/f"{config['model']['name']}_tuning_parameters.tex"
-    latex_string = styler.to_latex(
-        # buf=latex_path,
-        hrules=True,
-        label=f"tab:{latex_path.stem}",
-        **config.get('latex_table_parameters', {}),
-    )
-    if 'longtable' in latex_string:
-        latex_string = f"""
-\\begingroup
-\\renewcommand\\arraystretch{{0.5}}
-{latex_string}
-\endgroup
-"""
-    with open(latex_path, 'w') as f:
-        f.write(latex_string)
-    latex_df.columns = latex_df.columns.map(lambda x: x.replace('\_', '_')) # Convert header names back.
-    logger.info(latex_path)
+    latex_config = config.get('latex_table_parameters', {})
+    if isinstance(latex_config, list):
+        for i, cfg in enumerate(latex_config):
+            latex_path = Path(config['roots']['table_root'])/f"{config['model']['name']}_tuning_parameters_{i}.tex"
+            build_latex_tuning_parameters(
+                latex_config=cfg,
+                df=df,
+                metric_keys=metric_keys,
+                latex_path=latex_path,
+            )
+    else:
+        latex_path = Path(config['roots']['table_root'])/f"{config['model']['name']}_tuning_parameters.tex"
+        build_latex_tuning_parameters(
+            latex_config=latex_config,
+            df=df,
+            metric_keys=metric_keys,
+            latex_path=latex_path,
+        )
+
+
+#     # Export the parameters to LaTeX.
+#     table_header = ['model']
+#     table_header.extend(sorted(set(df.keys()) - set(metric_keys) - set(table_header)))
+#     latex_df = df[table_header].sort_values(by='model', ascending=True)
+#     latex_df.columns = latex_df.columns.map(lambda x: x.replace('_', '\_')) # Escape the header names too.
+#     styler = latex_df.style
+#     styler = styler.format(str, escape='latex') # Default is to convert all cells to their string representation.
+#     def latex_lr_formatter(val) -> str:
+#         # if isinstance(val, (int, float)):
+#         #     # return f"{val:.4f}"
+#         #     return f"{val:.4f}"
+#         if isinstance(val, dict):
+#             name = list(val.keys())[0]
+#             return name
+#             # s = ', '.join([f"{k}={v}" for k,v in val[name].items()])
+#             # return f"${name}({s})$".replace('_', '\_')
+#         else:
+#             return str(val)
+#     styler = styler.format(
+#         formatter=latex_lr_formatter,
+#         subset=[key for key in table_header if key == 'lr' or key == 'learning_rate'],
+#     )
+#     styler = styler.hide(axis=0) # Hide the index.
+#     latex_path = Path(config['roots']['table_root'])/f"{config['model']['name']}_tuning_parameters.tex"
+#     latex_string = styler.to_latex(
+#         # buf=latex_path,
+#         hrules=True,
+#         label=f"tab:{latex_path.stem}",
+#         **config.get('latex_table_parameters', {}),
+#     )
+#     if 'longtable' in latex_string:
+#         latex_string = f"""
+# \\begingroup
+# \\renewcommand\\arraystretch{{0.5}}
+# {latex_string}
+# \endgroup
+# """
+#     with open(latex_path, 'w') as f:
+#         f.write(latex_string)
+#     latex_df.columns = latex_df.columns.map(lambda x: x.replace('\_', '_')) # Convert header names back.
+#     logger.info(latex_path)
 
     ###
     # Plotting.
