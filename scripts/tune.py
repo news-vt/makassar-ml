@@ -13,6 +13,9 @@ if path not in sys.path:
 
 # Complete imports.
 import argparse
+from cycler import cycler
+from functools import reduce
+from itertools import cycle
 import logging
 import makassar_ml as ml
 import matplotlib.pyplot as plt
@@ -392,11 +395,14 @@ def main(
 
     if not no_plot:
 
+        # Get index of best model.
+        best_idx = df[['val_loss']].idxmin().values[0]
+
         # Plot train/val performance for best model.
         fig, ax = plt.subplots(nrows=len(metric_keys_base), ncols=1, figsize=(10,len(metric_keys_base)*3), sharex=True, constrained_layout=True)
         for j, key in enumerate(sorted(metric_keys_base)):
-            ax[j].plot(hist[key], label='train')
-            ax[j].plot(hist[f"val_{key}"], label='val')
+            ax[j].plot(hist[key], label=f'model {best_idx} train', linestyle='-')
+            ax[j].plot(hist[f"val_{key}"], label=f'model {best_idx} val', linestyle='--')
             ax[j].set_xlim(0, len(hist[key])-1)
             if j == len(metric_keys_base)-1:
                 ax[j].set_xlabel('epoch')
@@ -410,15 +416,25 @@ def main(
         logger.info(path)
             # fig.show()
 
+        # Set line style cycling.
+        n_hist = len(allhist)
+        cycles = [
+            cycler('linestyle', ['-', '--', ':', '-.']),
+            cycler('marker', ['o', '+', 'x', '*', 'd', 'X', 's', '^']),
+        ]
+        sty_cycle = reduce(lambda x,y: x*y, cycles)
+        color_cycle = cycler('color', plt.rcParams['axes.prop_cycle'].by_key()['color'])
+        # color_cycle = cycler('color', plt.cm.rainbow(np.linspace(0, 1, n_hist)))
+        styles = [{**sty,**c} for _, sty, c in zip(range(len(allhist)), cycle(sty_cycle), cycle(color_cycle))] # Create definitive list of styles for lookup.
 
         # Plot train/val/test metrics for all models.
-        n_hist = len(allhist)
-        color = plt.cm.rainbow(np.linspace(0, 1, n_hist))
-        fig, ax = plt.subplots(nrows=len(metric_keys_base), ncols=2, figsize=(15,len(metric_keys_base)*3), sharex='col', sharey='row', constrained_layout=True)
+        nrows = len(metric_keys_base)
+        ncols = 2
+        fig, ax = plt.subplots(nrows=nrows, ncols=ncols, figsize=(15,len(metric_keys_base)*3), sharex='col', sharey='none', constrained_layout=True)
         for j, key in enumerate(sorted(metric_keys_base)):
-            for i, (h, c) in enumerate(zip(allhist, color)):
+            for i, (h, sty) in enumerate(zip(allhist, styles)):
                 # Train.
-                ax[j,0].plot(h[key], label=f"model {i}", color=c, linestyle='-')
+                ax[j,0].plot(h[key], label=f"model {i}", markersize=5, **sty)
                 ax[j,0].set_xlim(0, len(h[key])-1)
                 if j == len(metric_keys_base)-1:
                     ax[j,0].set_xlabel('epoch')
@@ -427,20 +443,67 @@ def main(
                     ax[j,0].set_title('Training')
 
                 # Val.
-                ax[j,1].plot(h[f'val_{key}'], label=f"model {i}", color=c, linestyle='-')
+                ax[j,1].plot(h[f'val_{key}'], label=f"model {i}", markersize=5, **sty)
                 ax[j,1].set_xlim(0, len(h[key])-1)
                 if j == len(metric_keys_base)-1:
                     ax[j,1].set_xlabel('epoch')
                 if j == 0:
                     ax[j,1].set_title('Validation')
-
         handles, labels = ax[0,0].get_legend_handles_labels()
-        # fig.legend(handles, labels, loc='center left', ncol=max(n_hist//16, 1), bbox_to_anchor=(1.0,0.5))
         fig.legend(handles, labels, loc='upper center', ncol=9, bbox_to_anchor=(0.5,0.0))
-
         path = Path(config['roots']['image_root'])/f"tuned_{config['model']['name']}_metric_all.png"
         fig.savefig(path, bbox_inches='tight')
         logger.info(path)
+
+
+        ###### top 4
+
+        if 'highlight_plot' in config:
+
+            df_highlight = df
+
+            if 'models' in config['highlight_plot']:
+                df_highlight = df_highlight[df_highlight['model'].isin(config['highlight_plot']['models'])]
+
+            elif 'nsmallest' in config['highlight_plot']:
+                df_highlight = df_highlight.nsmallest(**config['highlight_plot']['nsmallest'])
+
+            elif 'nlargest' in config['highlight_plot']:
+                df_highlight = df_highlight.nlargest(**config['highlight_plot']['nlargest'])
+
+            # Plot train/val/test metrics for all models.
+            nrows = len(metric_keys_base)
+            ncols = 2
+            fig, ax = plt.subplots(nrows=nrows, ncols=ncols, figsize=(15,len(metric_keys_base)*3), sharex='col', sharey='none', constrained_layout=True)
+            for j, key in enumerate(sorted(metric_keys_base)):
+                for _, row in df_highlight.iterrows():
+
+                    # Gather model index, training history, and style.
+                    i = row['model']
+                    sty = styles[i]
+                    h = allhist[i]
+
+                    # Train.
+                    ax[j,0].plot(h[key], label=f"model {i}", markersize=5, **sty)
+                    ax[j,0].set_xlim(0, len(h[key])-1)
+                    if j == len(metric_keys_base)-1:
+                        ax[j,0].set_xlabel('epoch')
+                    ax[j,0].set_ylabel(key)
+                    if j == 0:
+                        ax[j,0].set_title('Training')
+
+                    # Val.
+                    ax[j,1].plot(h[f'val_{key}'], label=f"model {i}", markersize=5, **sty)
+                    ax[j,1].set_xlim(0, len(h[key])-1)
+                    if j == len(metric_keys_base)-1:
+                        ax[j,1].set_xlabel('epoch')
+                    if j == 0:
+                        ax[j,1].set_title('Validation')
+            handles, labels = ax[0,0].get_legend_handles_labels()
+            fig.legend(handles, labels, loc='upper center', ncol=9, bbox_to_anchor=(0.5,0.0))
+            path = Path(config['roots']['image_root'])/f"tuned_{config['model']['name']}_metric_highlight.png"
+            fig.savefig(path, bbox_inches='tight')
+            logger.info(path)
 
 
 if __name__ == '__main__':
