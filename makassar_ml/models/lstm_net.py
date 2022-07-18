@@ -13,8 +13,11 @@ def build_model(
 
     # Build LSTM layers.
     x = inp
-    for units in lstm_units:
-        x = keras.layers.LSTM(units=units, return_sequences=True)(x)
+    for i, units in enumerate(lstm_units):
+        x = keras.layers.LSTM(
+            units=units,
+            return_sequences=(i<len(lstm_units)-1),
+        )(x)
 
     # Build fully-connected layers.
     for units in fc_units:
