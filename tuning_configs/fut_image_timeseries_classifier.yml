@@ -87,6 +87,10 @@ latex_table_parameters:
     by: 'model'
     ascending: True
 
+# Plotting.
+highlight_plot:
+  models: [43, 42, 17]
+
 # Root directory paths.
 roots:
   project_root: &ID_project_root ${HOME}/research/makassar/
