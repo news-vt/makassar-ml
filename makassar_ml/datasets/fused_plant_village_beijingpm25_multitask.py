@@ -78,6 +78,7 @@ def load_data(
     shuffle_files: bool,
     batch_size: int,
     with_info: bool = False,
+    with_dates: bool = False,
     norm: bool = True,
     ) -> tuple[tf.data.Dataset,tf.data.Dataset,tf.data.Dataset]:
 
@@ -118,11 +119,13 @@ def load_data(
 
     # Fuse weather data for each split.
     ds_fused_out = []
+    date_selection = []
     for i in range(len(ds_images_tuple)):
 
         # Randomly select dates to associate with each element.
         n_images = int(ds_images_tuple[i].cardinality())
         random_dates = df_timeseries_tuple[i].iloc[timeseries_reserve_offset_index_in:-timeseries_reserve_offset_index_out].sample(n=n_images, replace=True)[timeseries_datetime_column]
+        date_selection.append(random_dates)
 
         # Fuse images with dates.
         ds_images_dates = tf.data.Dataset.zip(
@@ -166,9 +169,21 @@ def load_data(
         # Append to output list.
         ds_fused_out.append(ds_fused)
 
+    # Output contents.
+    out_list = []
+
     # Return with info.
     if with_info:
-        return tuple(ds_fused_out), info
-    # Return without info.
-    else:
+        out_list.append(info)
+
+    # Return with date selection.
+    if with_dates:
+        out_list.append(pd.concat(date_selection))
+
+    # Just return the dataset tuple.
+    if len(out_list) == 0:
         return tuple(ds_fused_out)
+
+    # Return dataset tuple with other output contents.
+    else:
+        return tuple([tuple(ds_fused_out), *out_list])
