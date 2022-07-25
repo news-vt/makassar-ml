@@ -143,6 +143,21 @@ def build_latex_tuning_results(
     logger.info(latex_path)
 
 
+def metrickey2plotlabel(key: str):
+    """Convert a metric name into a plot axis label.
+    """
+    # Acronyms.
+    if key.lower() in ('mse', 'mae', 'mape'):
+        return key.upper()
+    # Contains underscore or space.
+    elif '_' in key or ' ' in key:
+        key = key.replace('_',' ')
+        return ' '.join(metrickey2plotlabel(x) for x in key.split(' '))
+    # Default case is to return capitalized form.
+    else:
+        return key.capitalize()
+
+
 def build_latex_tuning_parameters(
     latex_config: dict,
     df: pd.DataFrame,
@@ -405,8 +420,9 @@ def main(
             ax[j].plot(hist[f"val_{key}"], label=f'model {best_idx} val', linestyle='--')
             ax[j].set_xlim(0, len(hist[key])-1)
             if j == len(metric_keys_base)-1:
-                ax[j].set_xlabel('epoch')
-            ax[j].set_ylabel(key)
+                ax[j].set_xlabel('Epoch', fontsize='large')
+            ylabel_text = metrickey2plotlabel(key)
+            ax[j].set_ylabel(ylabel_text, fontsize='large')
             # ax[j].legend(loc='upper left')
 
         handles, labels = ax[0].get_legend_handles_labels()
@@ -437,18 +453,19 @@ def main(
                 ax[j,0].plot(h[key], label=f"model {i}", markersize=5, **sty)
                 ax[j,0].set_xlim(0, len(h[key])-1)
                 if j == len(metric_keys_base)-1:
-                    ax[j,0].set_xlabel('epoch')
-                ax[j,0].set_ylabel(key)
+                    ax[j,0].set_xlabel('Epoch', fontsize='large')
+                ylabel_text = metrickey2plotlabel(key)
+                ax[j,0].set_ylabel(ylabel_text, fontsize='large')
                 if j == 0:
-                    ax[j,0].set_title('Training')
+                    ax[j,0].set_title('Training', fontsize='x-large')
 
                 # Val.
                 ax[j,1].plot(h[f'val_{key}'], label=f"model {i}", markersize=5, **sty)
                 ax[j,1].set_xlim(0, len(h[key])-1)
                 if j == len(metric_keys_base)-1:
-                    ax[j,1].set_xlabel('epoch')
+                    ax[j,1].set_xlabel('Epoch', fontsize='large')
                 if j == 0:
-                    ax[j,1].set_title('Validation')
+                    ax[j,1].set_title('Validation', fontsize='x-large')
         handles, labels = ax[0,0].get_legend_handles_labels()
         fig.legend(handles, labels, loc='upper center', ncol=9, bbox_to_anchor=(0.5,0.0))
         path = Path(config['roots']['image_root'])/f"tuned_{config['model']['name']}_metric_all.png"
@@ -487,18 +504,19 @@ def main(
                     ax[j,0].plot(h[key], label=f"model {i}", markersize=5, **sty)
                     ax[j,0].set_xlim(0, len(h[key])-1)
                     if j == len(metric_keys_base)-1:
-                        ax[j,0].set_xlabel('epoch')
-                    ax[j,0].set_ylabel(key)
+                        ax[j,0].set_xlabel('Epoch', fontsize='large')
+                    ylabel_text = metrickey2plotlabel(key)
+                    ax[j,0].set_ylabel(ylabel_text, fontsize='large')
                     if j == 0:
-                        ax[j,0].set_title('Training')
+                        ax[j,0].set_title('Training', fontsize='x-large')
 
                     # Val.
                     ax[j,1].plot(h[f'val_{key}'], label=f"model {i}", markersize=5, **sty)
                     ax[j,1].set_xlim(0, len(h[key])-1)
                     if j == len(metric_keys_base)-1:
-                        ax[j,1].set_xlabel('epoch')
+                        ax[j,1].set_xlabel('Epoch', fontsize='large')
                     if j == 0:
-                        ax[j,1].set_title('Validation')
+                        ax[j,1].set_title('Validation', fontsize='x-large')
             handles, labels = ax[0,0].get_legend_handles_labels()
             fig.legend(handles, labels, loc='upper center', ncol=9, bbox_to_anchor=(0.5,0.0))
             path = Path(config['roots']['image_root'])/f"tuned_{config['model']['name']}_metric_highlight.png"
