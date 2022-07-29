@@ -413,24 +413,71 @@ def main(
         # Get index of best model.
         best_idx = df[['val_loss']].idxmin().values[0]
 
-        # Plot train/val performance for best model.
-        fig, ax = plt.subplots(nrows=len(metric_keys_base), ncols=1, figsize=(10,len(metric_keys_base)*3), sharex=True, constrained_layout=True)
-        for j, key in enumerate(sorted(metric_keys_base)):
-            ax[j].plot(hist[key], label=f'model {best_idx} train', linestyle='-')
-            ax[j].plot(hist[f"val_{key}"], label=f'model {best_idx} val', linestyle='--')
-            ax[j].set_xlim(0, len(hist[key])-1)
-            if j == len(metric_keys_base)-1:
-                ax[j].set_xlabel('Epoch', fontsize='large')
-            ylabel_text = metrickey2plotlabel(key)
-            ax[j].set_ylabel(ylabel_text, fontsize='large')
-            # ax[j].legend(loc='upper left')
 
-        handles, labels = ax[0].get_legend_handles_labels()
-        fig.legend(handles, labels, loc='upper center', ncol=2, bbox_to_anchor=(0.5,0.0))
-        path = Path(config['roots']['image_root'])/f"tuned_{config['model']['name']}_metric_best.png"
-        fig.savefig(path, bbox_inches='tight')
-        logger.info(path)
-            # fig.show()
+        # Plot train/val performance for best model.
+        if 'best_plot' in config:
+
+            orientation = config['best_plot'].get('orientation', [])
+            if isinstance(orientation, str):
+                orientation = [orientation]
+
+            if 'vertical' in orientation or not orientation:
+                fig, ax = plt.subplots(nrows=len(metric_keys_base), ncols=1, figsize=(10,len(metric_keys_base)*3), sharex=True, constrained_layout=True)
+                for j, key in enumerate(sorted(metric_keys_base)):
+                    ax[j].plot(hist[key], label=f'model {best_idx} train', linestyle='-')
+                    ax[j].plot(hist[f"val_{key}"], label=f'model {best_idx} val', linestyle='--')
+                    ax[j].set_xlim(0, len(hist[key])-1)
+                    if j == len(metric_keys_base)-1:
+                        ax[j].set_xlabel('Epoch', fontsize='large')
+                    ylabel_text = metrickey2plotlabel(key)
+                    ax[j].set_ylabel(ylabel_text, fontsize='large')
+
+                handles, labels = ax[0].get_legend_handles_labels()
+                fig.legend(handles, labels, loc='upper center', ncol=2, bbox_to_anchor=(0.5,0.0))
+                path = Path(config['roots']['image_root'])/f"tuned_{config['model']['name']}_metric_best.png"
+                fig.savefig(path, bbox_inches='tight')
+                logger.info(path)
+
+            if 'horizontal' in orientation:
+                fig, ax = plt.subplots(nrows=1, ncols=len(metric_keys_base), figsize=(len(metric_keys_base)*7,5), sharex=True, constrained_layout=True)
+                for j, key in enumerate(sorted(metric_keys_base)):
+                    ax[j].plot(hist[key], label=f'model {best_idx} train', linestyle='-')
+                    ax[j].plot(hist[f"val_{key}"], label=f'model {best_idx} val', linestyle='--')
+                    ax[j].set_xlim(0, len(hist[key])-1)
+                    ax[j].set_xlabel('Epoch', fontsize='large')
+                    ylabel_text = metrickey2plotlabel(key)
+                    ax[j].set_title(ylabel_text, fontsize='x-large')
+
+                handles, labels = ax[0].get_legend_handles_labels()
+                fig.legend(handles, labels, loc='upper center', ncol=2, bbox_to_anchor=(0.5,0.0))
+                path = Path(config['roots']['image_root'])/f"tuned_{config['model']['name']}_metric_best_horizontal.png"
+                fig.savefig(path, bbox_inches='tight')
+                logger.info(path)
+
+        # Legacy compatibility.
+        else:
+            # Plot train/val performance for best model.
+            fig, ax = plt.subplots(nrows=len(metric_keys_base), ncols=1, figsize=(10,len(metric_keys_base)*3), sharex=True, constrained_layout=True)
+            for j, key in enumerate(sorted(metric_keys_base)):
+                ax[j].plot(hist[key], label=f'model {best_idx} train', linestyle='-')
+                ax[j].plot(hist[f"val_{key}"], label=f'model {best_idx} val', linestyle='--')
+                ax[j].set_xlim(0, len(hist[key])-1)
+                if j == len(metric_keys_base)-1:
+                    ax[j].set_xlabel('Epoch', fontsize='large')
+                ylabel_text = metrickey2plotlabel(key)
+                ax[j].set_ylabel(ylabel_text, fontsize='large')
+                # ax[j].legend(loc='upper left')
+
+            handles, labels = ax[0].get_legend_handles_labels()
+            fig.legend(handles, labels, loc='upper center', ncol=2, bbox_to_anchor=(0.5,0.0))
+            path = Path(config['roots']['image_root'])/f"tuned_{config['model']['name']}_metric_best.png"
+            fig.savefig(path, bbox_inches='tight')
+            logger.info(path)
+
+
+
+
+
 
         # Set line style cycling.
         n_hist = len(allhist)
@@ -444,62 +491,74 @@ def main(
         styles = [{**sty,**c} for _, sty, c in zip(range(len(allhist)), cycle(sty_cycle), cycle(color_cycle))] # Create definitive list of styles for lookup.
 
         # Plot train/val/test metrics for all models.
-        nrows = len(metric_keys_base)
-        ncols = 2
-        fig, ax = plt.subplots(nrows=nrows, ncols=ncols, figsize=(15,len(metric_keys_base)*3), sharex='col', sharey='none', constrained_layout=True)
-        for j, key in enumerate(sorted(metric_keys_base)):
-            for i, (h, sty) in enumerate(zip(allhist, styles)):
-                # Train.
-                ax[j,0].plot(h[key], label=f"model {i}", markersize=5, **sty)
-                ax[j,0].set_xlim(0, len(h[key])-1)
-                if j == len(metric_keys_base)-1:
-                    ax[j,0].set_xlabel('Epoch', fontsize='large')
-                ylabel_text = metrickey2plotlabel(key)
-                ax[j,0].set_ylabel(ylabel_text, fontsize='large')
-                if j == 0:
-                    ax[j,0].set_title('Training', fontsize='x-large')
+        if 'all_plot' in config:
+            orientation = config['all_plot'].get('orientation', [])
+            if isinstance(orientation, str):
+                orientation = [orientation]
 
-                # Val.
-                ax[j,1].plot(h[f'val_{key}'], label=f"model {i}", markersize=5, **sty)
-                ax[j,1].set_xlim(0, len(h[key])-1)
-                if j == len(metric_keys_base)-1:
-                    ax[j,1].set_xlabel('Epoch', fontsize='large')
-                if j == 0:
-                    ax[j,1].set_title('Validation', fontsize='x-large')
-        handles, labels = ax[0,0].get_legend_handles_labels()
-        fig.legend(handles, labels, loc='upper center', ncol=9, bbox_to_anchor=(0.5,0.0))
-        path = Path(config['roots']['image_root'])/f"tuned_{config['model']['name']}_metric_all.png"
-        fig.savefig(path, bbox_inches='tight')
-        logger.info(path)
+            if 'vertical' in orientation or not orientation:
+                # Plot train/val/test metrics for all models.
+                nrows = len(metric_keys_base)
+                ncols = 2
+                fig, ax = plt.subplots(nrows=nrows, ncols=ncols, figsize=(15,len(metric_keys_base)*3), sharex='col', sharey='none', constrained_layout=True)
+                for j, key in enumerate(sorted(metric_keys_base)):
+                    for i, (h, sty) in enumerate(zip(allhist, styles)):
+                        # Train.
+                        ax[j,0].plot(h[key], label=f"model {i}", markersize=5, **sty)
+                        ax[j,0].set_xlim(0, len(h[key])-1)
+                        if j == len(metric_keys_base)-1:
+                            ax[j,0].set_xlabel('Epoch', fontsize='large')
+                        ylabel_text = metrickey2plotlabel(key)
+                        ax[j,0].set_ylabel(ylabel_text, fontsize='large')
+                        if j == 0:
+                            ax[j,0].set_title('Training', fontsize='x-large')
 
+                        # Val.
+                        ax[j,1].plot(h[f'val_{key}'], label=f"model {i}", markersize=5, **sty)
+                        ax[j,1].set_xlim(0, len(h[key])-1)
+                        if j == len(metric_keys_base)-1:
+                            ax[j,1].set_xlabel('Epoch', fontsize='large')
+                        if j == 0:
+                            ax[j,1].set_title('Validation', fontsize='x-large')
+                handles, labels = ax[0,0].get_legend_handles_labels()
+                fig.legend(handles, labels, loc='upper center', ncol=9, bbox_to_anchor=(0.5,0.0))
+                path = Path(config['roots']['image_root'])/f"tuned_{config['model']['name']}_metric_all.png"
+                fig.savefig(path, bbox_inches='tight')
+                logger.info(path)
 
-        ###### top 4
+            if 'horizontal' in orientation:
+                nrows = 2
+                ncols = len(metric_keys_base)
+                fig, ax = plt.subplots(nrows=nrows, ncols=ncols, figsize=(len(metric_keys_base)*7,8), sharex='col', sharey='none', constrained_layout=True)
+                for j, key in enumerate(sorted(metric_keys_base)):
+                    for i, (h, sty) in enumerate(zip(allhist, styles)):
+                        # Train.
+                        ax[0,j].plot(h[key], label=f"model {i}", markersize=5, **sty)
+                        ax[0,j].set_xlim(0, len(h[key])-1)
+                        ylabel_text = metrickey2plotlabel(key)
+                        ax[0,j].set_title(ylabel_text, fontsize='x-large')
+                        if j == 0:
+                            ax[0,j].set_ylabel('Training', fontsize='x-large', rotation='horizontal', ha='right', va="center", labelpad=15)
 
-        if 'highlight_plot' in config:
+                        # Val.
+                        ax[1,j].plot(h[f'val_{key}'], label=f"model {i}", markersize=5, **sty)
+                        ax[1,j].set_xlim(0, len(h[key])-1)
+                        ax[1,j].set_xlabel('Epoch', fontsize='large')
+                        if j == 0:
+                            ax[1,j].set_ylabel('Validation', fontsize='x-large', rotation='horizontal', ha='right', va="center", labelpad=15)
+                handles, labels = ax[0,0].get_legend_handles_labels()
+                fig.legend(handles, labels, loc='upper center', ncol=9, bbox_to_anchor=(0.5,0.0))
+                path = Path(config['roots']['image_root'])/f"tuned_{config['model']['name']}_metric_all_horizontal.png"
+                fig.savefig(path, bbox_inches='tight')
+                logger.info(path)
 
-            df_highlight = df
-
-            if 'models' in config['highlight_plot']:
-                df_highlight = df_highlight[df_highlight['model'].isin(config['highlight_plot']['models'])]
-
-            elif 'nsmallest' in config['highlight_plot']:
-                df_highlight = df_highlight.nsmallest(**config['highlight_plot']['nsmallest'])
-
-            elif 'nlargest' in config['highlight_plot']:
-                df_highlight = df_highlight.nlargest(**config['highlight_plot']['nlargest'])
-
-            # Plot train/val/test metrics for all models.
+        # Legacy compatibility.
+        else:
             nrows = len(metric_keys_base)
             ncols = 2
             fig, ax = plt.subplots(nrows=nrows, ncols=ncols, figsize=(15,len(metric_keys_base)*3), sharex='col', sharey='none', constrained_layout=True)
             for j, key in enumerate(sorted(metric_keys_base)):
-                for _, row in df_highlight.iterrows():
-
-                    # Gather model index, training history, and style.
-                    i = row['model']
-                    sty = styles[i]
-                    h = allhist[i]
-
+                for i, (h, sty) in enumerate(zip(allhist, styles)):
                     # Train.
                     ax[j,0].plot(h[key], label=f"model {i}", markersize=5, **sty)
                     ax[j,0].set_xlim(0, len(h[key])-1)
@@ -519,9 +578,93 @@ def main(
                         ax[j,1].set_title('Validation', fontsize='x-large')
             handles, labels = ax[0,0].get_legend_handles_labels()
             fig.legend(handles, labels, loc='upper center', ncol=9, bbox_to_anchor=(0.5,0.0))
-            path = Path(config['roots']['image_root'])/f"tuned_{config['model']['name']}_metric_highlight.png"
+            path = Path(config['roots']['image_root'])/f"tuned_{config['model']['name']}_metric_all.png"
             fig.savefig(path, bbox_inches='tight')
             logger.info(path)
+
+
+        # Highlight specific models.
+        if 'highlight_plot' in config:
+
+            df_highlight = df
+            if 'models' in config['highlight_plot']:
+                df_highlight = df_highlight[df_highlight['model'].isin(config['highlight_plot']['models'])]
+            elif 'nsmallest' in config['highlight_plot']:
+                df_highlight = df_highlight.nsmallest(**config['highlight_plot']['nsmallest'])
+            elif 'nlargest' in config['highlight_plot']:
+                df_highlight = df_highlight.nlargest(**config['highlight_plot']['nlargest'])
+
+            # Control plot orientation.
+            orientation = config['highlight_plot'].get('orientation', [])
+            if isinstance(orientation, str):
+                orientation = [orientation]
+
+            if 'vertical' in orientation or not orientation:
+                nrows = len(metric_keys_base)
+                ncols = 2
+                fig, ax = plt.subplots(nrows=nrows, ncols=ncols, figsize=(15,len(metric_keys_base)*3), sharex='col', sharey='none', constrained_layout=True)
+                for j, key in enumerate(sorted(metric_keys_base)):
+                    for _, row in df_highlight.iterrows():
+
+                        # Gather model index, training history, and style.
+                        i = row['model']
+                        sty = styles[i]
+                        h = allhist[i]
+
+                        # Train.
+                        ax[j,0].plot(h[key], label=f"model {i}", markersize=5, **sty)
+                        ax[j,0].set_xlim(0, len(h[key])-1)
+                        if j == len(metric_keys_base)-1:
+                            ax[j,0].set_xlabel('Epoch', fontsize='large')
+                        ylabel_text = metrickey2plotlabel(key)
+                        ax[j,0].set_ylabel(ylabel_text, fontsize='large')
+                        if j == 0:
+                            ax[j,0].set_title('Training', fontsize='x-large')
+
+                        # Val.
+                        ax[j,1].plot(h[f'val_{key}'], label=f"model {i}", markersize=5, **sty)
+                        ax[j,1].set_xlim(0, len(h[key])-1)
+                        if j == len(metric_keys_base)-1:
+                            ax[j,1].set_xlabel('Epoch', fontsize='large')
+                        if j == 0:
+                            ax[j,1].set_title('Validation', fontsize='x-large')
+                handles, labels = ax[0,0].get_legend_handles_labels()
+                fig.legend(handles, labels, loc='upper center', ncol=9, bbox_to_anchor=(0.5,0.0))
+                path = Path(config['roots']['image_root'])/f"tuned_{config['model']['name']}_metric_highlight.png"
+                fig.savefig(path, bbox_inches='tight')
+                logger.info(path)
+
+            if 'horizontal' in orientation:
+                nrows = 2
+                ncols = len(metric_keys_base)
+                fig, ax = plt.subplots(nrows=nrows, ncols=ncols, figsize=(len(metric_keys_base)*7,8), sharex='col', sharey='none', constrained_layout=True)
+                for j, key in enumerate(sorted(metric_keys_base)):
+                    for _, row in df_highlight.iterrows():
+
+                        # Gather model index, training history, and style.
+                        i = row['model']
+                        sty = styles[i]
+                        h = allhist[i]
+
+                        # Train.
+                        ax[0,j].plot(h[key], label=f"model {i}", markersize=5, **sty)
+                        ax[0,j].set_xlim(0, len(h[key])-1)
+                        ylabel_text = metrickey2plotlabel(key)
+                        ax[0,j].set_title(ylabel_text, fontsize='x-large')
+                        if j == 0:
+                            ax[0,j].set_ylabel('Training', fontsize='x-large', rotation='horizontal', ha='right', va="center", labelpad=15)
+
+                        # Val.
+                        ax[1,j].plot(h[f'val_{key}'], label=f"model {i}", markersize=5, **sty)
+                        ax[1,j].set_xlim(0, len(h[key])-1)
+                        ax[1,j].set_xlabel('Epoch', fontsize='large')
+                        if j == 0:
+                            ax[1,j].set_ylabel('Validation', fontsize='x-large', rotation='horizontal', ha='right', va="center", labelpad=15)
+                handles, labels = ax[0,0].get_legend_handles_labels()
+                fig.legend(handles, labels, loc='upper center', ncol=9, bbox_to_anchor=(0.5,0.0))
+                path = Path(config['roots']['image_root'])/f"tuned_{config['model']['name']}_metric_highlight_horizontal.png"
+                fig.savefig(path, bbox_inches='tight')
+                logger.info(path)
 
 
 if __name__ == '__main__':
