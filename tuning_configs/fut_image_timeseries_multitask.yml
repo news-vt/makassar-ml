@@ -115,8 +115,19 @@ latex_table_parameters:
     ascending: True
 
 # Plotting.
+all_plot:
+  orientation: 
+    - vertical
+    - horizontal
 highlight_plot:
   models: [42, 22]
+  orientation: 
+    - vertical
+    - horizontal
+best_plot:
+  orientation: 
+      - vertical
+      - horizontal
 
 # Root directory paths.
 roots:
