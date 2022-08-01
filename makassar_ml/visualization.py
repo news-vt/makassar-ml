@@ -6,6 +6,22 @@ import seaborn as sns
 import tensorflow as tf
 
 
+
+def metrickey2plotlabel(key: str):
+    """Convert a metric name into a plot axis label.
+    """
+    # Acronyms.
+    if key.lower() in ('mse', 'mae', 'mape', 'scce'):
+        return key.upper()
+    # Contains underscore or space.
+    elif '_' in key or ' ' in key:
+        key = key.replace('_',' ')
+        return ' '.join(metrickey2plotlabel(x) for x in key.split(' '))
+    # Default case is to return capitalized form.
+    else:
+        return key.capitalize()
+
+
 def plot_metric(history: dict, metric: str) -> plt.Figure:
     """Plots model training and validation metric."""
     fig = plt.figure()
