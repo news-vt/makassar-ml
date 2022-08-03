@@ -27,3 +27,5 @@ This repository is organized as follows:
 ## Citation
 
 We have a paper that is in preparation.
+
+We also have a presentation on [Google Slides](https://docs.google.com/presentation/d/1KMO7PLfbGIo4kDuyWi1789rHyNawoDrpZ7sQluRJXyM/edit?usp=sharing) that is publically available.
