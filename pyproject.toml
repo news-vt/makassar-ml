@@ -1,0 +1,37 @@
+[project]
+name = "makassar-ml"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Alexander DeRieux", email = "alexander.derieux@gmail.com"},
+]
+dependencies = [
+    "tensorflow",
+    "numpy",
+    "pandas",
+    "matplotlib",
+    "seaborn",
+    "tqdm",
+]
+requires-python = ">=3.7"
+license = {text = "MIT"}
+
+[project.urls]
+homepage = ""
+
+[build-system]
+requires = ["setuptools ~= 58.0", "cython ~= 0.29.0"]
+
+[project.optional-dependencies]
+tests = [
+    'pytest',
+]
+dev = [
+    'ipykernel',
+]
+
+
+[tool.pytest.ini_options]
+testpaths = [
+    "tests",
+]

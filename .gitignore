@@ -1,3 +1,7 @@
+# Datasets at root directory.
+/dataset/
+/datasets/
+
 # macOS files.
 .DS_Store
 Icon?
@@ -132,3 +136,11 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# PDM files
+.pdm.toml
+
+# PyTorch Lightning logs.
+lightning_logs/
+model_checkpoints/
+checkpoints/

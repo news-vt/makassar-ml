@@ -1,0 +1,117 @@
+# Dataset.
+dataset:
+  name: beijingpm25
+  parameters:
+    path: ${HOME}/research/makassar/datasets/beijing_pm25
+    # in_feat: &ID_in_feat ['day_of_year','TEMP','Iws','Is','Ir']
+    # in_feat: &ID_in_feat ['pm2.5','TEMP','Iws','Ir']
+    # out_feat: &ID_out_feat ['DEWP','PRES']
+    in_feat: &ID_in_feat ['TEMP','DEWP','PRES','Iws']
+    out_feat: &ID_out_feat ['pm2.5','Ir']
+    in_seq_len: &ID_in_seq_len 24 # 1 day
+    out_seq_len: &ID_out_seq_len 1 # 1 hour
+    shift: 1
+    split: [0.7,0.2,0.1]
+    shuffle: False
+
+# Model definition.
+model:
+  name: FoT
+  parameters:
+    in_seq_len: *ID_in_seq_len
+    in_feat: !len [*ID_in_feat]
+    out_feat: !len [*ID_out_feat]
+    embed_dim: 
+      values:
+        - 5
+        - 10
+    n_heads: 
+      values:
+        - 8
+    ff_dim:
+      values:
+        - 256
+        - 512
+    dropout: 
+      values:
+        - 0.1
+        - 0.3
+    n_encoders:
+      values:
+        - 3
+        - 6
+
+# Training configuration.
+train:
+  batch_size: 256 # 115 batches
+  epochs: 30 # 3450 steps
+
+  # Optimizer.
+  optimizer:
+    name: adam
+    parameters:
+      lr:
+        values:
+          - 1.0e-3
+          - CosineDecay:
+              initial_learning_rate: 1.0e-3
+              decay_steps: 3450
+              alpha: 0.1
+          - CosineDecayRestarts:
+              initial_learning_rate: 1.0e-3
+              first_decay_steps: 1150 # 3450/3
+              alpha: 0.1
+              m_mul: 0.8
+
+
+  # Compile parameters.
+  compile:
+    loss: mse
+    metrics: ['mae']
+
+  # # Training callbacks.
+  # callbacks:
+  #   # EarlyStopping:
+  #   #   monitor: val_loss
+  #   #   mode: auto
+  #   #   patience: 3
+  #   #   restore_best_weights: True
+  #   # LearningRateAdjuster: {}
+  #   # LearningRateScheduler:
+  #   #   schedule: CosineDecay
+  #   #   parameters:
+  #   #     initial_learning_rate: 1.0e-5
+  #   #     decay_epochs: 20
+  #   #     alpha: 0.0
+
+# LaTeX table parameters.
+latex_table_results:
+  environment: "longtable"
+  caption: "Tuned \\ac{fot} performance on Beijing PM2.5 dataset. Rows are sorted by column $val\\_loss$ in ascending order to highlight best-performing models. Best performance values for each column are highlighted in \\textbf{bold}."
+  position: "hbt"
+  sort_values:
+    by: 'val_loss'
+    ascending: True
+latex_table_parameters:
+  environment: "longtable"
+  caption: "Tuned \\ac{fot} model parameters. Rows are sorted by column $model$ in ascending order."
+  position: "hbt"
+  header: [model, dropout, embed_dim, ff_dim, lr, n_encoders, n_heads]
+  sort_values:
+    by: 'model'
+    ascending: True
+
+
+# Plotting.
+highlight_plot:
+  models: [9, 19, 29, 0]
+
+
+# Root directory paths.
+roots:
+  project_root: &ID_project_root ${HOME}/research/makassar/
+  checkpoint_root: !join [*ID_project_root, checkpoints]
+  image_root: !join [*ID_project_root, images]
+  table_root: !join [*ID_project_root, tables]
+  hp_tuning_root: !join [*ID_project_root, hp_tuning]
+  keras_tuner_path: !join [*ID_project_root, keras_tuner]

@@ -1,0 +1,14 @@
+name: makassar-ml
+channels:
+  - conda-forge
+dependencies:
+  - tensorflow
+  - pytest
+  - ipykernel
+  - tqdm
+  - matplotlib
+  - pandas
+  - conda-build
+  - notebook
+  - jupyter
+  - pyyaml
