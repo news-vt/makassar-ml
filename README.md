@@ -8,9 +8,11 @@
 [![arXiv](https://img.shields.io/badge/python->=3.7-blue.svg)](https://arxiv.org/abs/<TBD>)
 ![TensorFlow](https://badges.aleen42.com/src/tensorflow.svg)
 
-[![arXiv](https://img.shields.io/badge/arXiv-in_preparation-b31b1b.svg)](https://arxiv.org/abs/)
+<!-- [![arXiv](https://img.shields.io/badge/arXiv-in_preparation-b31b1b.svg)](https://arxiv.org/abs/) -->
+[![Thesis](https://img.shields.io/badge/VTechWorks-10919/111788-orange.svg)](http://hdl.handle.net/10919/111788)
+[![Google Slides](https://img.shields.io/badge/Google_Slides-Defense_Presentation-yellow.svg)](https://docs.google.com/presentation/d/1KMO7PLfbGIo4kDuyWi1789rHyNawoDrpZ7sQluRJXyM/edit#slide=id.p)
 
-Codebase for M.S. thesis research titled "Transformer Networks for Smart Cities: Framework and Application to Makassar Smart Garden Alleys" (in preparation).
+Codebase for M.S. thesis research titled "Transformer Networks for Smart Cities: Framework and Application to Makassar Smart Garden Alleys".
 
 ## Getting Started
 
@@ -26,6 +28,18 @@ This repository is organized as follows:
 
 ## Citation
 
-We have a paper that is in preparation.
+If you use the code in this repository for your research or publication, please cite the original thesis:
+```bibtex
+@mastersthesis{DeRieux2022,
+    author = {Alexander C. DeRieux},
+    city = {Blacksburg},
+    institution = {Virginia Tech},
+    title = {{Transformer Networks for Smart Cities: Framework and Application to Makassar Smart Garden Alleys}},
+    url = {http://hdl.handle.net/10919/111788},
+    month = {8},
+    day = {12},
+    year = {2022},
+}
+```
 
-We also have a presentation on [Google Slides](https://docs.google.com/presentation/d/1KMO7PLfbGIo4kDuyWi1789rHyNawoDrpZ7sQluRJXyM/edit?usp=sharing) that is publically available.
+We also have a presentation on [Google Slides](https://docs.google.com/presentation/d/1KMO7PLfbGIo4kDuyWi1789rHyNawoDrpZ7sQluRJXyM/edit?usp=sharing) that is publicly available.
