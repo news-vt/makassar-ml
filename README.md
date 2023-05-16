@@ -5,7 +5,8 @@
 ![GitHub contributors](https://img.shields.io/github/contributors/news-vt/makassar-ml?color=light%20green)
 
 <!-- ![Python](https://badges.aleen42.com/src/python.svg) -->
-[![arXiv](https://img.shields.io/badge/python->=3.7-blue.svg)](https://arxiv.org/abs/<TBD>)
+<!-- [![arXiv](https://img.shields.io/badge/python->=3.7-blue.svg)](https://arxiv.org/abs/<TBD>) -->
+![Python](https://img.shields.io/badge/python->=3.7-blue.svg)
 ![TensorFlow](https://badges.aleen42.com/src/tensorflow.svg)
 
 <!-- [![arXiv](https://img.shields.io/badge/arXiv-in_preparation-b31b1b.svg)](https://arxiv.org/abs/) -->
