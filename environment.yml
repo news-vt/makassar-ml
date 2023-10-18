@@ -2,13 +2,18 @@ name: makassar-ml
 channels:
   - conda-forge
 dependencies:
-  - tensorflow
-  - pytest
-  - ipykernel
-  - tqdm
-  - matplotlib
-  - pandas
   - conda-build
-  - notebook
+  - ipykernel
   - jupyter
+  - keras-tuner
+  - matplotlib
+  - notebook
+  - numpy
+  - pandas
+  - pytest
   - pyyaml
+  - scikit-learn
+  - seaborn
+  - tensorflow
+  - tensorflow-datasets
+  - tqdm
