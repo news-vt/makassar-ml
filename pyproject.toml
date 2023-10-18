@@ -1,6 +1,6 @@
 [project]
 name = "makassar-ml"
-version = "1.0.2"
+version = "1.0.3"
 description = ""
 authors = [
     {name = "Alexander DeRieux", email = "alexander.derieux@gmail.com"},
@@ -27,7 +27,7 @@ find = {}  # Scanning implicit namespaces is active by default
 homepage = "https://github.com/news-vt/makassar-ml"
 
 [build-system]
-requires = ["setuptools", "cython"]
+requires = ["setuptools", "wheel", "cython"]
 
 [project.optional-dependencies]
 tests = [
