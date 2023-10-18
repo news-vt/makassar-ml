@@ -1,6 +1,6 @@
 [project]
 name = "makassar-ml"
-version = "1.0.3"
+version = "1.0.4"
 description = ""
 authors = [
     {name = "Alexander DeRieux", email = "alexander.derieux@gmail.com"},
@@ -28,6 +28,7 @@ homepage = "https://github.com/news-vt/makassar-ml"
 
 [build-system]
 requires = ["setuptools", "wheel", "cython"]
+build-backend = "setuptools.build_meta"
 
 [project.optional-dependencies]
 tests = [
